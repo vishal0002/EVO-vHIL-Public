@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture — EVO vHIL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="scanline"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> EVO vHIL</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="architecture.html" class="active">Architecture</a>
+      <a href="safety.html">Safety</a>
+      <a href="validation.html">Validation</a>
+      <a href="proof.html">Proof</a>
+      <a href="fullpaper.html">White Paper</a>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="container">
+    <div class="page-tag">System Architecture</div>
+    <h1>Layered, Loosely Coupled<br><span style="color:var(--cyan)">Six-Layer Stack</span></h1>
+    <p class="mt-2" style="max-width:58ch; font-size:1.05rem;">Each layer operates in an isolated execution environment. Failures in any single layer — especially the UI — cannot compromise core powertrain safety logic.</p>
+  </div>
+</div>
+
+<!-- LAYER TABLE -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Stack Overview</div>
+      <h2 class="section-title">System Layers</h2>
+    </div>
+    <div class="diagram-wrap">
+      <table class="layer-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Layer</th>
+            <th>Component</th>
+            <th>Technology</th>
+            <th>Isolation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="layer-num">L1</span></td>
+            <td><strong style="color:var(--text-hi)">Embedded Powertrain</strong></td>
+            <td>Pre-Production BMS Firmware (84S HV + 4S LV)</td>
+            <td><span class="tech-tag">Custom C / RTOS</span></td>
+            <td><span class="badge badge-cyan">Full</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">L2</span></td>
+            <td><strong style="color:var(--text-hi)">Simulation Environment</strong></td>
+            <td>MCU Hardware Emulator</td>
+            <td><span class="tech-tag">Renode</span></td>
+            <td><span class="badge badge-cyan">Full</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">L3</span></td>
+            <td><strong style="color:var(--text-hi)">Communication Bridge</strong></td>
+            <td>Middleware Protocol Translator</td>
+            <td><span class="tech-tag">Python / Socket I/O</span></td>
+            <td><span class="badge badge-amber">Process</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">L4</span></td>
+            <td><strong style="color:var(--text-hi)">Control & Safety</strong></td>
+            <td>VCU Safety Daemon</td>
+            <td><span class="tech-tag">Native C++ / AAOS</span></td>
+            <td><span class="badge badge-cyan">Full</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">L5</span></td>
+            <td><strong style="color:var(--text-hi)">CCS Charging Interface</strong></td>
+            <td>Linux User-Space SPI Driver + PLC Modem</td>
+            <td><span class="tech-tag">spidev / ISO 15118</span></td>
+            <td><span class="badge badge-cyan">Full</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">L6</span></td>
+            <td><strong style="color:var(--text-hi)">Application</strong></td>
+            <td>Dashboard UI</td>
+            <td><span class="tech-tag">VHAL / Android UI</span></td>
+            <td><span class="badge badge-amber">One-Way IPC</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout cyan mt-3">
+      <p>The UI application layer receives powertrain state via <strong>one-way UDP broadcast only</strong>. A crash, freeze, or memory corruption in the UI process cannot propagate upstream to affect the VCU safety loop.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FULL ARCH DIAGRAM -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Data Flow</div>
+      <h2 class="section-title">Full Architecture Diagram</h2>
+    </div>
+    <div class="diagram-wrap" style="overflow:auto;">
+      <svg viewBox="0 0 800 560" xmlns="http://www.w3.org/2000/svg" style="min-width:640px;width:100%;height:auto;">
+        <defs>
+          <marker id="a1" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(0,212,255,0.7)"/>
+          </marker>
+          <marker id="a2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(245,158,11,0.7)"/>
+          </marker>
+          <filter id="g1">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Background bands -->
+        <rect x="0" y="0" width="800" height="560" fill="#080c14"/>
+
+        <!-- Zone L1 -->
+        <rect x="10" y="20" width="360" height="100" rx="6" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="18" y="34" font-family="'IBM Plex Mono',monospace" font-size="9" fill="rgba(0,212,255,0.5)" letter-spacing="2">EMBEDDED POWERTRAIN &amp; SIMULATION</text>
+
+        <!-- BMS box -->
+        <rect x="20" y="44" width="160" height="64" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.4)" stroke-width="1.5" filter="url(#g1)"/>
+        <text x="30" y="64" font-family="'Rajdhani',sans-serif" font-size="13" fill="#00d4ff" font-weight="700">BMS FIRMWARE</text>
+        <text x="30" y="80" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">C / RTOS · 32-bit MCU</text>
+        <text x="30" y="93" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">84S HV Pack + 4S LV Pack</text>
+
+        <!-- Renode box -->
+        <rect x="200" y="44" width="155" height="64" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+        <text x="210" y="64" font-family="'Rajdhani',sans-serif" font-size="13" fill="#00d4ff" font-weight="700">MCU EMULATOR</text>
+        <text x="210" y="80" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Renode</text>
+        <text x="210" y="93" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Hardware-agnostic sim</text>
+
+        <!-- BMS → Renode -->
+        <line x1="181" y1="76" x2="198" y2="76" stroke="rgba(0,212,255,0.6)" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Renode → Bridge (down arrow) -->
+        <line x1="277" y1="109" x2="277" y2="158" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a1)"/>
+        <text x="282" y="140" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">HV+LV Telemetry</text>
+        <text x="282" y="151" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">CAN Frames</text>
+
+        <!-- Zone L3: Bridge -->
+        <rect x="10" y="165" width="780" height="75" rx="6" fill="rgba(245,158,11,0.04)" stroke="rgba(245,158,11,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="18" y="179" font-family="'IBM Plex Mono',monospace" font-size="9" fill="rgba(245,158,11,0.5)" letter-spacing="2">COMMUNICATION BRIDGE</text>
+        <rect x="260" y="188" width="280" height="42" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+        <text x="280" y="208" font-family="'Rajdhani',sans-serif" font-size="13" fill="#f59e0b" font-weight="700">MIDDLEWARE BRIDGE</text>
+        <text x="280" y="222" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Stream Parser → CAN Encoder → Socket Injector</text>
+
+        <!-- Bridge → VCU (down) -->
+        <line x1="400" y1="232" x2="400" y2="280" stroke="rgba(245,158,11,0.5)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a2)"/>
+        <text x="405" y="260" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Encoded CAN</text>
+
+        <!-- Zone AAOS -->
+        <rect x="10" y="288" width="780" height="145" rx="6" fill="rgba(0,212,255,0.03)" stroke="rgba(0,212,255,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="18" y="302" font-family="'IBM Plex Mono',monospace" font-size="9" fill="rgba(0,212,255,0.4)" letter-spacing="2">AAOS CONTROL LAYER</text>
+
+        <!-- vCAN -->
+        <rect x="30" y="312" width="130" height="55" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+        <text x="40" y="333" font-family="'Rajdhani',sans-serif" font-size="12" fill="#00d4ff" font-weight="600">UDP TUNNEL</text>
+        <text x="40" y="349" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">vCAN Interface</text>
+
+        <!-- VCU box -->
+        <rect x="185" y="305" width="220" height="70" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.45)" stroke-width="2" filter="url(#g1)"/>
+        <text x="195" y="327" font-family="'Rajdhani',sans-serif" font-size="14" fill="#00d4ff" font-weight="700">C++ VCU DAEMON</text>
+        <text x="195" y="345" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Safety &amp; Logic Engine</text>
+        <text x="195" y="359" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">AAOS Vendor Partition</text>
+
+        <!-- SPI Driver -->
+        <rect x="430" y="312" width="155" height="55" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+        <text x="440" y="333" font-family="'Rajdhani',sans-serif" font-size="12" fill="#00d4ff" font-weight="600">SPI DRIVER</text>
+        <text x="440" y="349" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">CCS / ISO 15118 PLC</text>
+        <text x="440" y="363" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Linux spidev · user-space</text>
+
+        <!-- Arrows in AAOS layer -->
+        <line x1="161" y1="339" x2="182" y2="339" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#a1)"/>
+        <!-- VCU ↔ SPI -->
+        <line x1="406" y1="339" x2="428" y2="339" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#a1)"/>
+        <line x1="428" y1="346" x2="406" y2="346" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#a1)"/>
+        <text x="408" y="358" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Full-duplex SPI</text>
+
+        <!-- VCU → UI (down) -->
+        <line x1="260" y1="376" x2="260" y2="440" stroke="rgba(0,212,255,0.4)" stroke-width="1.5" marker-end="url(#a1)"/>
+        <text x="266" y="415" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">IPC / UDP Broadcast</text>
+        <text x="266" y="426" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">(one-way only)</text>
+
+        <!-- SPI → Modem (right) -->
+        <line x1="586" y1="339" x2="648" y2="339" stroke="rgba(245,158,11,0.5)" stroke-width="1.5" marker-end="url(#a2)"/>
+
+        <!-- Modem -->
+        <rect x="650" y="312" width="130" height="55" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.3)" stroke-width="1.5"/>
+        <text x="660" y="333" font-family="'Rajdhani',sans-serif" font-size="11" fill="#f59e0b" font-weight="600">HP GREEN PHY</text>
+        <text x="660" y="349" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">PLC Modem · SPI</text>
+        <text x="660" y="363" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Peripheral</text>
+
+        <!-- Modem → EVSE (down) -->
+        <line x1="715" y1="368" x2="715" y2="440" stroke="rgba(245,158,11,0.5)" stroke-width="1.5" marker-end="url(#a2)"/>
+        <text x="720" y="412" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">PLC Signal over</text>
+        <text x="720" y="423" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Control Pilot</text>
+
+        <!-- L6: UI -->
+        <rect x="155" y="448" width="215" height="65" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.15)" stroke-width="1"/>
+        <text x="165" y="470" font-family="'Rajdhani',sans-serif" font-size="13" fill="#c8d6e5" font-weight="600">DASHBOARD UI</text>
+        <text x="165" y="488" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">VHAL Mapping</text>
+        <text x="165" y="502" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">Android UI Layer</text>
+
+        <!-- EVSE -->
+        <rect x="625" y="448" width="160" height="65" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.3)" stroke-width="1.5"/>
+        <text x="635" y="470" font-family="'Rajdhani',sans-serif" font-size="13" fill="#f59e0b" font-weight="700">EXTERNAL EVSE</text>
+        <text x="635" y="488" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">CCS Charger</text>
+        <text x="635" y="502" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">ISO 15118 Station</text>
+
+        <!-- Watermark -->
+        <text x="10" y="548" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(0,212,255,0.25)">EVO vHIL · Full Architecture · Rev 1.3 · 6 Layers · Fully Virtualized</text>
+        <circle cx="780" cy="26" r="6" fill="#22c55e" filter="url(#g1)"/>
+        <text x="762" y="24" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e">SIM</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- DUAL PACK -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Dual-Pack Topology</div>
+      <h2 class="section-title">Independent LV Architecture</h2>
+      <p class="section-lead">The most significant departure from conventional EV design in the EVO architecture.</p>
+    </div>
+    <div class="two-col" style="align-items:start; gap:3rem;">
+      <div>
+        <h3 style="color:var(--red); margin-bottom:1rem;">❌ Conventional Architecture</h3>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="ra" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(239,68,68,0.7)"/>
+              </marker>
+            </defs>
+            <rect x="80" y="15" width="160" height="50" rx="5" fill="#0d1321" stroke="rgba(239,68,68,0.4)" stroke-width="1.5"/>
+            <text x="100" y="38" font-family="'Rajdhani',sans-serif" font-size="12" fill="#ef4444" font-weight="600">HV Traction Pack</text>
+            <text x="100" y="54" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">84S · ~300V</text>
+
+            <line x1="160" y1="66" x2="160" y2="95" stroke="rgba(239,68,68,0.5)" stroke-width="1.5" marker-end="url(#ra)"/>
+
+            <rect x="60" y="100" width="200" height="40" rx="5" fill="#0d1321" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+            <text x="90" y="118" font-family="'Rajdhani',sans-serif" font-size="11" fill="#c8d6e5" font-weight="600">DC-DC Converter</text>
+            <text x="100" y="132" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">HV → 12V</text>
+
+            <line x1="160" y1="141" x2="160" y2="163" stroke="rgba(239,68,68,0.5)" stroke-width="1.5" marker-end="url(#ra)"/>
+
+            <rect x="60" y="168" width="200" height="25" rx="5" fill="#0d1321" stroke="rgba(239,68,68,0.25)" stroke-width="1"/>
+            <text x="100" y="185" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">12V Rail (VCU + Coils)</text>
+
+            <text x="20" y="100" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.6)">HV fails ↓</text>
+            <text x="20" y="112" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.6)">12V fails ↓</text>
+            <text x="20" y="124" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.6)">UNCONTROLLED</text>
+          </svg>
+        </div>
+        <div class="callout red mt-2">
+          <p>HV pack failure causes simultaneous 12V collapse. No controlled shutdown. No fault logging. No contactor sequencing.</p>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--green); margin-bottom:1rem;">✅ EVO Dual-Pack Architecture</h3>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="ga" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(34,197,94,0.7)"/>
+              </marker>
+              <marker id="ba" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(0,212,255,0.7)"/>
+              </marker>
+            </defs>
+            <!-- HV Pack -->
+            <rect x="10" y="15" width="130" height="50" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <text x="20" y="35" font-family="'Rajdhani',sans-serif" font-size="11" fill="#00d4ff" font-weight="600">84S HV Pack</text>
+            <text x="20" y="50" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">~300V Traction</text>
+            <text x="20" y="62" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#f59e0b">TRACTION ONLY</text>
+
+            <!-- LV Pack -->
+            <rect x="180" y="15" width="130" height="50" rx="5" fill="#0d1321" stroke="rgba(34,197,94,0.5)" stroke-width="1.5" />
+            <text x="190" y="35" font-family="'Rajdhani',sans-serif" font-size="11" fill="#22c55e" font-weight="600">4S LV Pack</text>
+            <text x="190" y="50" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">~12V Aux</text>
+            <text x="190" y="62" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e">INDEPENDENT</text>
+
+            <!-- LV → loads -->
+            <line x1="245" y1="66" x2="245" y2="100" stroke="rgba(34,197,94,0.6)" stroke-width="1.5" marker-end="url(#ga)"/>
+
+            <rect x="155" y="105" width="155" height="55" rx="5" fill="#0d1321" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+            <text x="165" y="124" font-family="'Rajdhani',sans-serif" font-size="10" fill="#22c55e" font-weight="600">12V Rail</text>
+            <text x="165" y="140" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">VCU · Coils · Sensors</text>
+            <text x="165" y="153" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e">Stays powered ✓</text>
+
+            <!-- HV fail label -->
+            <text x="15" y="100" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.6)">HV fails ✗</text>
+            <line x1="75" y1="66" x2="75" y2="185" stroke="rgba(239,68,68,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="15" y="150" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.5)">Isolated here</text>
+            <text x="15" y="162" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(34,197,94,0.6)">Control persists →</text>
+          </svg>
+        </div>
+        <div class="callout cyan mt-2">
+          <p>HV pack failure is fully isolated. LV pack keeps VCU running, coils powered, fault logged. Ordered shutdown executed.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPI / CCS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">CCS Fast Charging</div>
+      <h2 class="section-title">Linux User-Space SPI Driver</h2>
+      <p class="section-lead">DC Fast Charging via CCS Type 2 demands deterministic, low-latency SPI access — incompatible with the Android HAL's scheduling variability.</p>
+    </div>
+    <div class="two-col" style="align-items:start;">
+      <div>
+        <p>Rather than routing PLC modem communication through the standard Android Hardware Abstraction Layer, the EVO VCU daemon implements a <strong>direct Linux user-space SPI driver</strong> via the native kernel <code>spidev</code> interface.</p>
+        <p>The SPI bus is configured via <code>ioctl</code> calls at daemon initialization — mode, word length, and clock speed — validated before any charging session begins.</p>
+        <ul class="feature-list mt-3">
+          <li><span class="icon">⚡</span><span><strong>Full-Duplex Polling:</strong> Non-blocking memory transfers coexist with the safety loop without blocking either.</span></li>
+          <li><span class="icon">🎯</span><span><strong>Determinism by Design:</strong> Bypassing the Android HAL eliminates the scheduling variability incompatible with ISO 15118 timing budgets.</span></li>
+          <li><span class="icon">🔒</span><span><strong>Black-Box Abstraction:</strong> The CCS subsystem exposes a deterministic control interface to the safety layer — independent of ISO 15118 stack internals.</span></li>
+        </ul>
+        <div class="callout mt-3">
+          <h4 style="margin-bottom:0.5rem;">Charging Guarantees</h4>
+          <ul class="feature-list">
+            <li><span class="icon">✓</span><span>No premature HV enable until parameter negotiation is complete</span></li>
+            <li><span class="icon">✓</span><span>Continuous (not sampled) energy validation throughout the session</span></li>
+            <li><span class="icon">✓</span><span>Unilateral BMS authority to terminate any session at any time</span></li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 340 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="sa" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(0,212,255,0.7)"/>
+              </marker>
+            </defs>
+            <!-- VCU Daemon -->
+            <rect x="10" y="10" width="320" height="100" rx="6" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="18" y="25" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(0,212,255,0.4)" letter-spacing="2">VCU C++ DAEMON · AAOS VENDOR PARTITION</text>
+            <rect x="20" y="33" width="130" height="65" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="30" y="54" font-family="'Rajdhani',sans-serif" font-size="11" fill="#00d4ff" font-weight="600">CCS CONTROLLER</text>
+            <text x="30" y="70" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">SPI Polling Loop</text>
+            <text x="30" y="83" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Non-blocking transfers</text>
+            <text x="30" y="93" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#f59e0b">← Full-duplex</text>
+
+            <rect x="180" y="33" width="138" height="65" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+            <text x="190" y="54" font-family="'Rajdhani',sans-serif" font-size="11" fill="#00d4ff" font-weight="600">SAFETY ENGINE</text>
+            <text x="190" y="70" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Contactor Logic</text>
+            <text x="190" y="83" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Fault Handling</text>
+
+            <!-- CCS ↔ Safety -->
+            <line x1="151" y1="65" x2="178" y2="65" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#sa)"/>
+            <text x="155" y="80" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">state</text>
+
+            <!-- Kernel -->
+            <rect x="60" y="140" width="220" height="55" rx="6" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="68" y="154" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(34,197,94,0.5)" letter-spacing="2">LINUX KERNEL</text>
+            <rect x="80" y="162" width="180" height="25" rx="4" fill="#0d1321" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+            <text x="100" y="178" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#22c55e">spidev · kernel interface</text>
+
+            <!-- VCU → Kernel -->
+            <line x1="85" y1="111" x2="140" y2="138" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#sa)"/>
+            <text x="88" y="130" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">ioctl / transfer</text>
+
+            <!-- Kernel → Modem -->
+            <line x1="170" y1="188" x2="170" y2="225" stroke="rgba(34,197,94,0.5)" stroke-width="1.5" marker-end="url(#sa)"/>
+            <text x="176" y="212" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">SPI bus</text>
+
+            <!-- Modem -->
+            <rect x="90" y="232" width="160" height="50" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+            <text x="100" y="253" font-family="'Rajdhani',sans-serif" font-size="12" fill="#f59e0b" font-weight="600">HP GREEN PHY</text>
+            <text x="100" y="269" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080">PLC Modem · SPI Peripheral</text>
+
+            <!-- Modem → EVSE -->
+            <line x1="170" y1="283" x2="170" y2="308" stroke="rgba(245,158,11,0.5)" stroke-width="1.5" marker-end="url(#sa)"/>
+            <text x="176" y="300" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">PLC over CP wire</text>
+
+            <text x="120" y="318" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(245,158,11,0.6)">→ CCS Charger (EVSE)</text>
+          </svg>
+        </div>
+        <div class="code-block mt-2">
+          <span class="code-label">SPI Init</span>
+          <div class="code-line-dim">// Daemon initialization sequence</div>
+          <div class="code-line-cyan">fd = open("/dev/spidev0.0", O_RDWR);</div>
+          <div class="code-line-amber">ioctl(fd, SPI_IOC_WR_MODE, &amp;mode);</div>
+          <div class="code-line-amber">ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &amp;speed);</div>
+          <div class="code-line-green">// Validated before any session begins</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BMS STATE MACHINE -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Power State Machine</div>
+      <h2 class="section-title">BMS Contactor Sequencing</h2>
+      <p class="section-lead">A formally structured machine governing all high-voltage contactor operations. Each transition is conditional, safety-gated, and unidirectional.</p>
+    </div>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" style="min-width:600px;width:100%;height:auto;">
+        <defs>
+          <marker id="sm-a" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(0,212,255,0.7)"/>
+          </marker>
+          <marker id="sm-r" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(239,68,68,0.7)"/>
+          </marker>
+          <marker id="sm-g" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(34,197,94,0.7)"/>
+          </marker>
+          <marker id="sm-y" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(245,158,11,0.7)"/>
+          </marker>
+        </defs>
+
+        <!-- INIT -->
+        <rect x="20" y="75" width="80" height="50" rx="5" fill="#0d1321" stroke="#607080" stroke-width="1.5"/>
+        <text x="60" y="97" font-family="'Rajdhani',sans-serif" font-size="13" fill="#c8d6e5" font-weight="600" text-anchor="middle">INIT</text>
+        <text x="60" y="114" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">relays open</text>
+
+        <line x1="101" y1="100" x2="138" y2="100" stroke="rgba(0,212,255,0.6)" stroke-width="1.5" marker-end="url(#sm-a)"/>
+
+        <!-- STANDBY -->
+        <rect x="140" y="75" width="90" height="50" rx="5" fill="#0d1321" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="185" y="97" font-family="'Rajdhani',sans-serif" font-size="13" fill="#93c5fd" font-weight="600" text-anchor="middle">STANDBY</text>
+        <text x="185" y="113" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">IGN OFF</text>
+
+        <!-- STANDBY → PRECHARGE -->
+        <line x1="231" y1="100" x2="278" y2="100" stroke="rgba(245,158,11,0.7)" stroke-width="1.5" marker-end="url(#sm-y)"/>
+        <text x="252" y="93" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#f59e0b" text-anchor="middle">IGN ON</text>
+
+        <!-- PRECHARGE -->
+        <rect x="280" y="75" width="105" height="50" rx="5" fill="#0d1321" stroke="#f59e0b" stroke-width="2"/>
+        <text x="332" y="97" font-family="'Rajdhani',sans-serif" font-size="13" fill="#f59e0b" font-weight="600" text-anchor="middle">PRECHARGE</text>
+        <text x="332" y="113" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">cap charging</text>
+
+        <!-- PRECHARGE → DRIVE -->
+        <line x1="386" y1="100" x2="433" y2="100" stroke="rgba(34,197,94,0.7)" stroke-width="1.5" marker-end="url(#sm-g)"/>
+        <text x="409" y="93" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#22c55e" text-anchor="middle">V_OK</text>
+
+        <!-- DRIVE -->
+        <rect x="435" y="75" width="90" height="50" rx="5" fill="#0d1321" stroke="#22c55e" stroke-width="2"/>
+        <text x="480" y="97" font-family="'Rajdhani',sans-serif" font-size="13" fill="#22c55e" font-weight="600" text-anchor="middle">DRIVE</text>
+        <text x="480" y="113" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">HV active</text>
+
+        <!-- CHARGE (from STANDBY, below) -->
+        <line x1="185" y1="126" x2="185" y2="155" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#sm-a)"/>
+        <rect x="140" y="158" width="90" height="35" rx="5" fill="#0d1321" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="185" y="180" font-family="'Rajdhani',sans-serif" font-size="12" fill="#00d4ff" font-weight="600" text-anchor="middle">CHARGE</text>
+
+        <!-- FAULT (from PRECHARGE, above) -->
+        <line x1="332" y1="74" x2="332" y2="48" stroke="rgba(239,68,68,0.6)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#sm-r)"/>
+        <rect x="278" y="15" width="105" height="32" rx="5" fill="#0d1321" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="332" y="36" font-family="'Rajdhani',sans-serif" font-size="13" fill="#ef4444" font-weight="600" text-anchor="middle">FAULT</text>
+        <text x="280" y="53" font-family="'IBM Plex Mono',monospace" font-size="7" fill="rgba(239,68,68,0.7)">precharge timeout</text>
+
+        <!-- DRIVE → FAULT (heartbeat) -->
+        <line x1="480" y1="74" x2="400" y2="32" stroke="rgba(239,68,68,0.5)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#sm-r)"/>
+        <text x="455" y="50" font-family="'IBM Plex Mono',monospace" font-size="7" fill="rgba(239,68,68,0.7)">heartbeat lost</text>
+
+        <!-- STANDBY → FAULT (weld detection) -->
+        <line x1="185" y1="74" x2="300" y2="42" stroke="rgba(239,68,68,0.5)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#sm-r)"/>
+        <text x="215" y="57" font-family="'IBM Plex Mono',monospace" font-size="7" fill="rgba(239,68,68,0.7)">weld detected</text>
+
+        <!-- Labels -->
+        <text x="560" y="90" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(0,212,255,0.4)">→ Mandatory path</text>
+        <text x="560" y="106" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.5)">⇢ Fault path</text>
+        <text x="560" y="122" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">No STANDBY → DRIVE skip</text>
+        <text x="560" y="138" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">PRECHARGE is mandatory</text>
+      </svg>
+    </div>
+    <div class="callout red mt-3">
+      <p><strong>Critical constraint:</strong> There is no path from STANDBY directly to DRIVE. The PRECHARGE sequence is mandatory, not optional — preventing destructive inrush current that would weld contactors or destroy the motor controller's input stage.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">EVO vHIL</div>
+      <div class="footer-meta mt-1">System Architecture · Revision 1.3</div>
+    </div>
+    <nav class="footer-nav">
+      <a href="index.html">Home</a>
+      <a href="safety.html">Safety →</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

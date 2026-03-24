@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validation — EVO vHIL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="scanline"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> EVO vHIL</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="safety.html">Safety</a>
+      <a href="validation.html" class="active">Validation</a>
+      <a href="proof.html">Proof</a>
+      <a href="fullpaper.html">White Paper</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="page-tag">Fault Injection & Validation</div>
+    <h1>Deterministic Fault Injection<br><span style="color:var(--amber)">as a First-Class Workflow</span></h1>
+    <p class="mt-2" style="max-width:60ch; font-size:1.05rem;">The fully virtualized architecture transforms fault injection from a labor-intensive activity into a repeatable, automated engineering workflow — with zero hardware risk.</p>
+  </div>
+</div>
+
+<!-- WHY VIRTUAL -->
+<section class="section">
+  <div class="container">
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-icon">🔬</span>
+        <div class="card-title">No Hardware Risk</div>
+        <div class="card-body">Thermal runaways, deep discharge events, cell imbalances, and LV pack degradation can be injected freely — zero risk to physical hardware or personnel.</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔁</span>
+        <div class="card-title">Deterministic Replay</div>
+        <div class="card-body">Every fault scenario is defined by a data stream mutation. The exact same fault can be replayed bit-for-bit, enabling precise regression testing and CI pipeline integration.</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <div class="card-title">Middleware Interception</div>
+        <div class="card-body">By intercepting the data stream at the middleware layer before it reaches the VCU, any fault can be constructed without modifying production firmware or hardware.</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">📊</span>
+        <div class="card-title">Automated Assertions</div>
+        <div class="card-body">Each scenario produces a deterministic, verifiable VCU state transition — enabling automated pass/fail assertions within a CI pipeline with no human judgment required.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAULT MATRIX -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Validated Scenarios</div>
+      <h2 class="section-title">Fault Injection Matrix</h2>
+    </div>
+    <div class="diagram-wrap">
+      <table class="fault-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Scenario</th>
+            <th>Injection Method</th>
+            <th>Expected VCU Response</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="layer-num">F1</span></td>
+            <td><strong style="color:var(--text-hi)">Overvoltage Event</strong></td>
+            <td><span style="font-family:var(--mono); font-size:0.82rem;">Corrupt HV cell voltage fields above threshold</span></td>
+            <td><span class="badge badge-red">System Inhibit — Contactor Drop</span></td>
+            <td><span class="badge badge-red">P1</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">F2</span></td>
+            <td><strong style="color:var(--text-hi)">Sensor Variance Mismatch</strong></td>
+            <td><span style="font-family:var(--mono); font-size:0.82rem;">Delta between cell sum and pack-level aggregate</span></td>
+            <td><span class="badge badge-amber">Plausibility Fault — System Inhibit</span></td>
+            <td><span class="badge badge-amber">P2</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">F3</span></td>
+            <td><strong style="color:var(--text-hi)">Phantom Node (CAN Loss)</strong></td>
+            <td><span style="font-family:var(--mono); font-size:0.82rem;">Drop all frames from critical CAN participant</span></td>
+            <td><span class="badge badge-amber">Watchdog Timeout — System Inhibit</span></td>
+            <td><span class="badge badge-amber">P2</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">F4</span></td>
+            <td><strong style="color:var(--text-hi)">LV Pack Under-Voltage</strong></td>
+            <td><span style="font-family:var(--mono); font-size:0.82rem;">Drive 4S aux pack toward critical threshold</span></td>
+            <td><span class="badge badge-cyan">Graceful Isolation — Controlled Shutdown</span></td>
+            <td><span class="badge badge-red">P1</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">F5</span></td>
+            <td><strong style="color:var(--text-hi)">Rogue Charger Overcurrent</strong></td>
+            <td><span style="font-family:var(--mono); font-size:0.82rem;">Inject EVSE telemetry exceeding demanded current</span></td>
+            <td><span class="badge badge-red">Rogue Charger Fault — Relay Severed</span></td>
+            <td><span class="badge badge-amber">P2</span></td>
+          </tr>
+          <tr>
+            <td><span class="layer-num">F6</span></td>
+            <td><strong style="color:var(--text-hi)">Thermal Runaway</strong></td>
+            <td><span style="font-family:var(--mono); font-size:0.82rem;">Escalate temperature sensor values to critical</span></td>
+            <td><span class="badge badge-red">Thermal Fault — Highest Priority Inhibit</span></td>
+            <td><span class="badge badge-red">P1</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- INJECTION FLOW DIAGRAM -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Injection Mechanism</div>
+      <h2 class="section-title">How Fault Injection Works</h2>
+    </div>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" style="min-width:600px;width:100%;height:auto;">
+        <defs>
+          <marker id="fia" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(0,212,255,0.7)"/>
+          </marker>
+          <marker id="fir" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(239,68,68,0.7)"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="70" width="140" height="60" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+        <text x="80" y="94" font-family="'Rajdhani',sans-serif" font-size="12" fill="#00d4ff" font-weight="600" text-anchor="middle">BMS FIRMWARE</text>
+        <text x="80" y="110" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">Normal telemetry</text>
+        <text x="80" y="122" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">stream output</text>
+
+        <line x1="151" y1="100" x2="188" y2="100" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#fia)"/>
+
+        <rect x="190" y="60" width="180" height="80" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.45)" stroke-width="2"/>
+        <text x="280" y="86" font-family="'Rajdhani',sans-serif" font-size="12" fill="#f59e0b" font-weight="600" text-anchor="middle">MIDDLEWARE BRIDGE</text>
+        <text x="280" y="104" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">Intercept point</text>
+        <text x="280" y="118" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#f59e0b" text-anchor="middle">↑ Inject fault here ↑</text>
+        <text x="280" y="132" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">No firmware modification</text>
+
+        <!-- Fault injector from above -->
+        <rect x="220" y="10" width="120" height="38" rx="5" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.4)" stroke-width="1.5"/>
+        <text x="280" y="24" font-family="'Rajdhani',sans-serif" font-size="10" fill="#ef4444" font-weight="600" text-anchor="middle">FAULT INJECTOR</text>
+        <text x="280" y="38" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">CI test suite / manual</text>
+        <line x1="280" y1="49" x2="280" y2="58" stroke="rgba(239,68,68,0.6)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#fir)"/>
+
+        <line x1="371" y1="100" x2="408" y2="100" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#fia)"/>
+        <text x="390" y="93" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">mutated</text>
+
+        <rect x="410" y="65" width="160" height="70" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.35)" stroke-width="1.5"/>
+        <text x="490" y="88" font-family="'Rajdhani',sans-serif" font-size="12" fill="#00d4ff" font-weight="600" text-anchor="middle">VCU DAEMON</text>
+        <text x="490" y="104" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">Receives mutated data</text>
+        <text x="490" y="118" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">Safety checks trigger</text>
+        <text x="490" y="130" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">→ deterministic response</text>
+
+        <line x1="571" y1="100" x2="608" y2="100" stroke="rgba(239,68,68,0.5)" stroke-width="1.5" marker-end="url(#fir)"/>
+
+        <rect x="610" y="65" width="140" height="70" rx="5" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.4)" stroke-width="1.5"/>
+        <text x="680" y="88" font-family="'Rajdhani',sans-serif" font-size="12" fill="#ef4444" font-weight="600" text-anchor="middle">SYSTEM INHIBIT</text>
+        <text x="680" y="104" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">Contactor isolation</text>
+        <text x="680" y="118" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#607080" text-anchor="middle">0V command issued</text>
+        <text x="680" y="132" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">✓ Pass/fail assertion</text>
+
+        <text x="10" y="185" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(0,212,255,0.4)">Production firmware is unmodified throughout. Fault injection occurs entirely at the middleware layer.</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- CI ORCHESTRATION -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">CI/CD Integration</div>
+      <h2 class="section-title">Boot Orchestration</h2>
+      <p class="section-lead">Reliable CI integration requires deterministic boot order, dependency management, and race condition elimination.</p>
+    </div>
+    <div class="two-col" style="align-items:start; gap:3rem;">
+      <div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 280 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="cia" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(0,212,255,0.6)"/>
+              </marker>
+              <filter id="cif">
+                <feGaussianBlur stdDeviation="2" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <!-- START -->
+            <rect x="80" y="10" width="120" height="36" rx="18" fill="#185FA5" stroke="#0C447C" stroke-width="2" filter="url(#cif)"/>
+            <text x="140" y="32" font-family="'Rajdhani',sans-serif" font-size="12" fill="white" font-weight="700" text-anchor="middle">CI PIPELINE</text>
+            <line x1="140" y1="47" x2="140" y2="65" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#cia)"/>
+
+            <!-- Step 1 -->
+            <rect x="40" y="68" width="200" height="38" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="70" y="86" font-family="'Rajdhani',sans-serif" font-size="11" fill="#c8d6e5" font-weight="600">① Boot Virtual Android OS</text>
+            <text x="70" y="99" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Virtual AAOS instance</text>
+            <line x1="140" y1="107" x2="140" y2="125" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#cia)"/>
+
+            <!-- Step 2 -->
+            <rect x="40" y="128" width="200" height="38" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="70" y="146" font-family="'Rajdhani',sans-serif" font-size="11" fill="#c8d6e5" font-weight="600">② Launch MCU Simulation</text>
+            <text x="70" y="159" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Renode · BMS firmware</text>
+            <line x1="140" y1="167" x2="140" y2="185" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#cia)"/>
+
+            <!-- Step 3 -->
+            <rect x="40" y="188" width="200" height="38" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="70" y="206" font-family="'Rajdhani',sans-serif" font-size="11" fill="#c8d6e5" font-weight="600">③ Initialize VCU Daemon</text>
+            <text x="70" y="219" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">C++ daemon · AAOS vendor</text>
+            <line x1="140" y1="227" x2="140" y2="245" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#cia)"/>
+
+            <!-- Step 4 -->
+            <rect x="40" y="248" width="200" height="38" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="70" y="266" font-family="'Rajdhani',sans-serif" font-size="11" fill="#c8d6e5" font-weight="600">④ Establish CAN + UDP Bridge</text>
+            <text x="70" y="279" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Middleware bridge active</text>
+            <line x1="140" y1="287" x2="140" y2="305" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#cia)"/>
+
+            <!-- Decision -->
+            <polygon points="140,308 210,330 140,352 70,330" fill="#0d1321" stroke="rgba(245,158,11,0.5)" stroke-width="1.5"/>
+            <text x="140" y="327" font-family="'Rajdhani',sans-serif" font-size="10" fill="#f59e0b" font-weight="600" text-anchor="middle">OS Boot Flag</text>
+            <text x="140" y="341" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">Confirmed?</text>
+
+            <!-- NO loop back -->
+            <line x1="70" y1="330" x2="20" y2="330" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+            <line x1="20" y1="330" x2="20" y2="267" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+            <line x1="20" y1="267" x2="38" y2="267" stroke="rgba(245,158,11,0.4)" stroke-width="1.5" marker-end="url(#cia)"/>
+            <text x="5" y="300" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#f59e0b" transform="rotate(-90,5,300)">NO · poll</text>
+
+            <!-- YES → Ready -->
+            <line x1="140" y1="353" x2="140" y2="372" stroke="rgba(34,197,94,0.6)" stroke-width="1.5" marker-end="url(#cia)"/>
+            <text x="145" y="366" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#22c55e">YES</text>
+            <rect x="60" y="375" width="160" height="20" rx="10" fill="rgba(34,197,94,0.15)" stroke="#22c55e" stroke-width="1.5" filter="url(#cif)"/>
+            <text x="140" y="389" font-family="'Rajdhani',sans-serif" font-size="10" fill="#22c55e" font-weight="700" text-anchor="middle">✓ ENVIRONMENT READY</text>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:1.5rem;">Orchestration Design</h3>
+        <ul class="feature-list">
+          <li><span class="icon">⚡</span><span><strong>Async launch:</strong> Virtual OS, MCU simulation, and middleware bridge are launched as independent processes, managed concurrently to minimize total init time.</span></li>
+          <li><span class="icon">🔒</span><span><strong>Boot flag polling:</strong> The orchestrator polls the Android boot completion flag before establishing inter-layer tunnels — eliminating race conditions where bridge or daemon might communicate before dependent services are ready.</span></li>
+          <li><span class="icon">🎯</span><span><strong>Known-good state guarantee:</strong> No test scenario executes until the orchestrator confirms a fully synchronized system state — eliminating false failures from initialization timing variability.</span></li>
+          <li><span class="icon">📊</span><span><strong>CI pass/fail:</strong> Every fault scenario produces a deterministic, verifiable VCU state transition — automatable without human judgment.</span></li>
+        </ul>
+        <div class="callout cyan mt-3">
+          <h4 style="margin-bottom:0.5rem;">Shift-Left Testing</h4>
+          <p>By moving fault injection into a virtual CI environment, EVO vHIL enables safety-critical validation to happen at every commit — not just on expensive physical HIL benches scheduled weeks in advance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">EVO vHIL</div>
+      <div class="footer-meta mt-1">Fault Injection & Validation · Revision 1.3</div>
+    </div>
+    <nav class="footer-nav">
+      <a href="safety.html">← Safety</a>
+      <a href="proof.html">Proof →</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

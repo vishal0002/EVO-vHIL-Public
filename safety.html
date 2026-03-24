@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Safety Model — EVO vHIL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="scanline"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> EVO vHIL</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="safety.html" class="active">Safety</a>
+      <a href="validation.html">Validation</a>
+      <a href="proof.html">Proof</a>
+      <a href="fullpaper.html">White Paper</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="page-tag">Safety Model</div>
+    <h1>Fail-Safe by Default<br><span style="color:var(--red)">Any Violation = System Inhibit</span></h1>
+    <p class="mt-2" style="max-width:60ch; font-size:1.05rem;">The VCU daemon implements a safety validation model inspired by ISO 26262 ASIL design principles — operating at two independent layers with overlapping coverage.</p>
+  </div>
+</div>
+
+<!-- SAFETY DECISION FLOW -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Decision Flow</div>
+      <h2 class="section-title">Safety Check Pipeline</h2>
+      <p class="section-lead">Every incoming data frame passes three sequential checks. Any failure routes immediately to System Inhibit.</p>
+    </div>
+    <div class="two-col" style="align-items:start; gap:3rem;">
+      <div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="fa" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(0,212,255,0.7)"/>
+              </marker>
+              <marker id="ra2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(239,68,68,0.8)"/>
+              </marker>
+              <marker id="ga2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+                <path d="M0,0 L0,7 L7,3.5 z" fill="rgba(34,197,94,0.8)"/>
+              </marker>
+              <filter id="rf">
+                <feGaussianBlur stdDeviation="3" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Incoming Data -->
+            <rect x="80" y="10" width="140" height="35" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="150" y="32" font-family="'Rajdhani',sans-serif" font-size="12" fill="#c8d6e5" font-weight="600" text-anchor="middle">INCOMING DATA</text>
+            <line x1="150" y1="46" x2="150" y2="70" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#fa)"/>
+
+            <!-- Check 1: Watchdog -->
+            <polygon points="150,75 220,110 150,145 80,110" fill="#0d1321" stroke="rgba(245,158,11,0.5)" stroke-width="1.5"/>
+            <text x="150" y="107" font-family="'Rajdhani',sans-serif" font-size="10" fill="#f59e0b" font-weight="600" text-anchor="middle">WATCHDOG</text>
+            <text x="150" y="120" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">TIMEOUT?</text>
+
+            <!-- YES → KILL -->
+            <line x1="80" y1="110" x2="30" y2="110" stroke="rgba(239,68,68,0.7)" stroke-width="1.5" marker-end="url(#ra2)"/>
+            <text x="52" y="104" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.8)">YES</text>
+
+            <!-- NO → next -->
+            <line x1="150" y1="146" x2="150" y2="175" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#fa)"/>
+            <text x="155" y="166" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">NO</text>
+
+            <!-- Check 2: Plausibility -->
+            <polygon points="150,180 220,215 150,250 80,215" fill="#0d1321" stroke="rgba(245,158,11,0.5)" stroke-width="1.5"/>
+            <text x="150" y="212" font-family="'Rajdhani',sans-serif" font-size="10" fill="#f59e0b" font-weight="600" text-anchor="middle">PLAUSIBILITY</text>
+            <text x="150" y="225" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">OK?</text>
+
+            <!-- NO → KILL -->
+            <line x1="80" y1="215" x2="30" y2="215" stroke="rgba(239,68,68,0.7)" stroke-width="1.5" marker-end="url(#ra2)"/>
+            <text x="52" y="209" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.8)">NO</text>
+
+            <!-- YES → next -->
+            <line x1="150" y1="251" x2="150" y2="280" stroke="rgba(0,212,255,0.5)" stroke-width="1.5" marker-end="url(#fa)"/>
+            <text x="155" y="271" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">YES</text>
+
+            <!-- Check 3: Fault -->
+            <polygon points="150,285 220,320 150,355 80,320" fill="#0d1321" stroke="rgba(245,158,11,0.5)" stroke-width="1.5"/>
+            <text x="150" y="317" font-family="'Rajdhani',sans-serif" font-size="10" fill="#f59e0b" font-weight="600" text-anchor="middle">CRITICAL FAULT</text>
+            <text x="150" y="330" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">PRESENT?</text>
+
+            <!-- YES → KILL -->
+            <line x1="80" y1="320" x2="30" y2="320" stroke="rgba(239,68,68,0.7)" stroke-width="1.5" marker-end="url(#ra2)"/>
+            <text x="52" y="314" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(239,68,68,0.8)">YES</text>
+
+            <!-- KILL box (left side) -->
+            <rect x="0" y="80" width="28" height="280" rx="4" fill="rgba(239,68,68,0.15)" stroke="rgba(239,68,68,0.4)" stroke-width="1.5" filter="url(#rf)"/>
+            <text x="14" y="175" font-family="'Rajdhani',sans-serif" font-size="9" fill="#ef4444" font-weight="700" text-anchor="middle" transform="rotate(-90, 14, 175)">SYSTEM INHIBIT</text>
+
+            <!-- NO → SAFE -->
+            <line x1="150" y1="356" x2="150" y2="400" stroke="rgba(34,197,94,0.7)" stroke-width="1.5" marker-end="url(#ga2)"/>
+            <text x="155" y="381" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e">NO</text>
+
+            <!-- SAFE box -->
+            <rect x="70" y="405" width="160" height="50" rx="5" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="2" filter="url(#rf)"/>
+            <text x="150" y="426" font-family="'Rajdhani',sans-serif" font-size="13" fill="#22c55e" font-weight="700" text-anchor="middle">NORMAL OPERATION</text>
+            <text x="150" y="444" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">Drive / Charge Permitted</text>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:1.5rem;">Safety Check Definitions</h3>
+
+        <div class="card mb-3">
+          <h4>1. Network Watchdog</h4>
+          <div class="card-body mt-2">The daemon maintains a heartbeat timer for all critical network participants. If any node fails to transmit within its expected window, a timeout fault is declared — guarding against silent failures, disconnections, or simulation crashes that would leave the VCU operating on stale data.</div>
+        </div>
+
+        <div class="card mb-3">
+          <h4>2. Integer-Math Plausibility Firewall</h4>
+          <div class="card-body mt-2">VCU and BMS independently verify aggregated readings against the arithmetic sum of sub-node values. The pack voltage must agree with the sum of individual cell voltages within a dynamic tolerance band. Uses <strong>strict integer math throughout</strong> — floating-point operations have non-deterministic execution time on embedded targets. The tolerance floor adjusts at low state-of-charge to prevent false-positive trips.</div>
+        </div>
+
+        <div class="card mb-3">
+          <h4>3. Critical Fault Detection</h4>
+          <div class="card-body mt-2">Safety faults evaluated under strict priority ordering. Thermal anomalies, LV pack under-voltage, and HV isolation faults occupy the highest tier — immediately overriding any active drive or charge demand. Lower-priority faults may permit degraded operation depending on calibration.</div>
+        </div>
+
+        <div class="callout red">
+          <h4 style="margin-bottom:0.5rem;">Fail-Safe Default</h4>
+          <p>The system defaults to <strong>safe state</strong>. Any ambiguity, timeout, or discrepancy routes to System Inhibit. Normal operation is an earned state — not the default.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BMS SAFETY PATTERNS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">BMS Firmware Layer</div>
+      <h2 class="section-title">Core Safety Patterns</h2>
+      <p class="section-lead">Four architectural patterns operating at firmware level — independent of and prior to the VCU-layer safety model above.</p>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Capacitive Precharge Enforcement</h4>
+        <div class="card-body mt-2">Before the main positive contactor can close, the firmware verifies that the motor-side bus capacitance has charged to within a defined tolerance of pack voltage. Closing against uncharged capacitors produces destructive inrush current capable of <strong>welding the contactor closed or destroying the motor controller's input stage.</strong></div>
+        <div class="mt-2">
+          <span class="badge badge-red">Prevents: Contactor Weld</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>VCU Deadman Switch</h4>
+        <div class="card-body mt-2">In the DRIVE state, the BMS monitors an active heartbeat from the VCU. If the VCU ceases to communicate beyond a defined interval, the BMS <strong>unilaterally initiates contactor isolation</strong>. The powertrain does not remain energized waiting for a command that may never arrive. A VCU crash, OS hang, or Android process death cannot leave the HV bus live.</div>
+        <div class="mt-2">
+          <span class="badge badge-red">Prevents: Runaway HV Bus</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Weld Detection at Standby</h4>
+        <div class="card-body mt-2">Before transitioning to PRECHARGE, the firmware samples voltage on the motor side of the main positive contactor. If high voltage is detected while contactors are commanded open, the firmware concludes a <strong>contactor has welded shut</strong> and transitions to FAULT. This prevents the vehicle appearing powered-off while the HV bus remains live — a serious electrocution risk during maintenance or post-collision.</div>
+        <div class="mt-2">
+          <span class="badge badge-red">Prevents: Electrocution Risk</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Non-Blocking Relay Sequencing</h4>
+        <div class="card-body mt-2">Mechanical contactors require finite actuation time. The firmware manages this with <strong>RTOS tick counters and step-flags</strong> rather than blocking delays — allowing contactor sequencing to proceed asynchronously while cell monitoring, thermal checks, and CAN broadcasting continue at full cadence. No safety-critical monitoring is suspended during a contactor transition.</div>
+        <div class="mt-2">
+          <span class="badge badge-cyan">Ensures: Continuous Monitoring</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ATOMIC FAULTING & ROGUE CHARGER -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Advanced Safety Mechanisms</div>
+      <h2 class="section-title">Hardware-Level Guarantees</h2>
+    </div>
+    <div class="two-col" style="align-items:start;">
+      <div>
+        <h3 style="margin-bottom:1rem;">⚛️ Hardware-Level Atomic Faulting</h3>
+        <p>When a critical fault is detected at the embedded level, the BMS executes an <strong>atomic latch sequence</strong> borrowed from aerospace and industrial control:</p>
+        <div class="code-block mt-3">
+          <span class="code-label">Atomic Fault Sequence</span>
+          <div class="code-line-dim">// 1. Disable global processor interrupts</div>
+          <div class="code-line-red">__disable_irq();</div>
+          <div class="code-line-dim">// 2. Data sync barrier — flush all pending writes</div>
+          <div class="code-line-amber">__DSB();</div>
+          <div class="code-line-dim">// 3. Physically sever contactor GPIO pins</div>
+          <div class="code-line-red">GPIO_CONTACTOR_OPEN_ALL();</div>
+          <div class="code-line-dim">// 4. Log fault code atomically</div>
+          <div class="code-line-green">fault_latch_write(fault_code);</div>
+        </div>
+        <p class="mt-3">This guarantees hardware isolation and fault logging in a <strong>single, uninterruptible operation</strong>. No nested interrupt or concurrent task can interfere between contactor isolation and fault logging.</p>
+      </div>
+      <div>
+        <h3 style="margin-bottom:1rem;">🚨 Rogue Charger Defense</h3>
+        <p>During the CHARGE state, the BMS and VCU <strong>actively police the external EVSE</strong> rather than trusting it unconditionally. The system does not assume external power electronics will behave within specification.</p>
+
+        <div class="diagram-wrap mt-3">
+          <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <defs>
+              <marker id="rca" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(0,212,255,0.7)"/>
+              </marker>
+              <marker id="rcr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="rgba(239,68,68,0.7)"/>
+              </marker>
+            </defs>
+            <!-- EVSE -->
+            <rect x="10" y="80" width="100" height="50" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+            <text x="60" y="101" font-family="'Rajdhani',sans-serif" font-size="11" fill="#f59e0b" font-weight="600" text-anchor="middle">EVSE</text>
+            <text x="60" y="117" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">CCS Charger</text>
+
+            <!-- Normal power -->
+            <line x1="111" y1="95" x2="145" y2="95" stroke="rgba(34,197,94,0.6)" stroke-width="1.5" marker-end="url(#rca)"/>
+            <text x="124" y="88" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#22c55e">OK ✓</text>
+
+            <!-- Rogue power -->
+            <line x1="111" y1="118" x2="145" y2="118" stroke="rgba(239,68,68,0.6)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#rcr)"/>
+            <text x="118" y="134" font-family="'IBM Plex Mono',monospace" font-size="7" fill="rgba(239,68,68,0.7)">OVERCURRENT ✗</text>
+
+            <!-- BMS Watchdog -->
+            <rect x="148" y="60" width="120" height="100" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <text x="208" y="82" font-family="'Rajdhani',sans-serif" font-size="10" fill="#00d4ff" font-weight="600" text-anchor="middle">BMS / VCU</text>
+            <text x="208" y="96" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">Policing Active</text>
+            <text x="208" y="115" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">I_delivered &gt; I_demanded</text>
+            <text x="208" y="130" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">+ defined margin?</text>
+            <text x="208" y="148" font-family="'Rajdhani',sans-serif" font-size="10" fill="#ef4444" font-weight="600" text-anchor="middle">→ ROGUE FAULT</text>
+
+            <!-- Sever relay -->
+            <line x1="269" y1="110" x2="300" y2="110" stroke="rgba(239,68,68,0.7)" stroke-width="1.5" marker-end="url(#rcr)"/>
+            <rect x="290" y="90" width="25" height="40" rx="3" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="1"/>
+            <text x="302" y="115" font-family="'Rajdhani',sans-serif" font-size="9" fill="#ef4444" font-weight="600" text-anchor="middle" transform="rotate(-90, 302, 115)">SEVER</text>
+
+            <text x="20" y="175" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">Charge relay severed immediately.</text>
+            <text x="20" y="188" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080">No charger acknowledgement required.</text>
+            <text x="20" y="201" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(34,197,94,0.6)">BMS has unconditional authority.</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAULT PRIORITY -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Fault Hierarchy</div>
+      <h2 class="section-title">Priority Ordering</h2>
+    </div>
+    <div class="diagram-wrap">
+      <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:640px; margin:0 auto;">
+        <div style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); border-radius:5px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem;">
+          <span style="font-family:var(--mono); font-size:0.72rem; color:var(--red); background:rgba(239,68,68,0.15); padding:0.25rem 0.6rem; border-radius:3px; flex-shrink:0;">P1 · CRITICAL</span>
+          <div>
+            <div style="font-family:var(--head); font-size:1rem; color:var(--red); font-weight:600;">Thermal Anomaly · LV Under-Voltage · HV Isolation Fault</div>
+            <div style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);">Immediate override of all drive and charge demands. No exceptions.</div>
+          </div>
+        </div>
+        <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius:5px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem;">
+          <span style="font-family:var(--mono); font-size:0.72rem; color:var(--amber); background:var(--amber-dim); padding:0.25rem 0.6rem; border-radius:3px; flex-shrink:0;">P2 · HIGH</span>
+          <div>
+            <div style="font-family:var(--head); font-size:1rem; color:var(--amber); font-weight:600;">Sensor Plausibility Fault · Watchdog Timeout · Rogue Charger</div>
+            <div style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);">System Inhibit triggered. Requires fault clearance to resume.</div>
+          </div>
+        </div>
+        <div style="background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.2); border-radius:5px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem;">
+          <span style="font-family:var(--mono); font-size:0.72rem; color:var(--cyan); background:var(--cyan-dim); padding:0.25rem 0.6rem; border-radius:3px; flex-shrink:0;">P3 · DEGRADED</span>
+          <div>
+            <div style="font-family:var(--head); font-size:1rem; color:var(--text-hi); font-weight:600;">Cell Imbalance · Soft Over-Temperature · Partial Node Loss</div>
+            <div style="font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);">May permit degraded operation at reduced power depending on calibration.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">EVO vHIL</div>
+      <div class="footer-meta mt-1">Safety Model · Revision 1.3</div>
+    </div>
+    <nav class="footer-nav">
+      <a href="architecture.html">← Architecture</a>
+      <a href="validation.html">Validation →</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

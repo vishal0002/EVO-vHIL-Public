@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>White Paper — EVO vHIL</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .paper { max-width: 780px; margin: 0 auto; }
+    .paper h2 { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .paper h3 { color: var(--cyan); margin-top: 1.75rem; font-size: 1.15rem; }
+    .paper p { color: var(--text); }
+    .paper ul, .paper ol { padding-left: 1.5rem; margin-bottom: 1rem; color: var(--text); }
+    .paper li { margin-bottom: 0.4rem; line-height: 1.7; }
+    .paper table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+    .paper table th { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--border-hi); text-align: left; }
+    .paper table td { padding: 0.75rem 0.85rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .paper table tr:hover td { background: var(--cyan-dim); }
+    .paper blockquote { border-left: 3px solid var(--cyan); padding: 0.75rem 1.25rem; background: var(--cyan-dim); margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+    .paper blockquote p { margin: 0; font-style: italic; }
+    .toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 1.75rem; margin-bottom: 3rem; }
+    .toc h3 { margin: 0 0 1rem; color: var(--text-hi); font-size: 1rem; }
+    .toc ol { padding-left: 1.5rem; }
+    .toc li { margin-bottom: 0.35rem; }
+    .toc a { font-family: var(--mono); font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+<div class="scanline"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> EVO vHIL</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="safety.html">Safety</a>
+      <a href="validation.html">Validation</a>
+      <a href="proof.html">Proof</a>
+      <a href="fullpaper.html" class="active">White Paper</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="page-tag">Technical White Paper</div>
+    <h1>EVO vHIL<br><span style="color:var(--text-dim); font-size:0.65em; font-weight:400;">Full Technical Document · Revision 1.3</span></h1>
+    <div class="flex gap-2 flex-wrap mt-3">
+      <span class="badge badge-cyan">Classification: Public</span>
+      <span class="badge badge-amber">Domain: Embedded Systems · EV Powertrain</span>
+      <span class="badge badge-cyan">Revision 1.3</span>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container paper">
+
+    <div class="toc">
+      <h3>Table of Contents</h3>
+      <ol>
+        <li><a href="#abstract">Abstract</a></li>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#arch">System Architecture</a></li>
+        <li><a href="#bms">Embedded Powertrain — BMS Firmware</a></li>
+        <li><a href="#bridge">Communication Bridge</a></li>
+        <li><a href="#aaos">Android Automotive OS Integration & SPI Driver</a></li>
+        <li><a href="#safety">Safety Model</a></li>
+        <li><a href="#faults">Fault Injection & Validation</a></li>
+        <li><a href="#ci">Repeatability & CI Orchestration</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#limitations">Limitations</a></li>
+        <li><a href="#future">Future Work</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ol>
+    </div>
+
+    <h2 id="abstract">Abstract</h2>
+    <p>This white paper presents <strong>EVO vHIL</strong>, a comprehensive, fully virtualized Hardware-in-the-Loop (vHIL) framework engineered for the co-development and validation of high-voltage electric vehicle (EV) control systems. The platform integrates a custom, pre-production C/RTOS Battery Management System (BMS) firmware, a production-intent Vehicle Control Unit (VCU) daemon executing on Android Automotive OS (AAOS), and a real-time communication bridge over a virtualized Controller Area Network (CAN).</p>
+    <p>In this revision, the architecture has been expanded in two significant dimensions. First, the BMS firmware now manages a <strong>dual-pack topology</strong> — a high-voltage traction pack and a physically independent low-voltage auxiliary pack — within the same RTOS environment, providing aerospace-grade redundancy for the vehicle's safety-critical 12V rail. Second, the VCU daemon has been extended with a <strong>native Linux user-space SPI driver</strong> enabling direct communication with a HomePlug Green PHY modem for DC Fast Charging (CCS Type 2) via ISO 15118 Powerline Communication (PLC).</p>
+
+    <h2 id="intro">1. Introduction</h2>
+    <p>Modern electric vehicles depend on tightly integrated, distributed software systems where failures carry direct safety implications. Historically, the development of Battery Management Systems (BMS), Vehicle Control Units (VCU), and DC Fast Charging controllers occurred in silos, with validation requiring expensive physical prototypes and dedicated Hardware-in-the-Loop (HIL) benches.</p>
+    <p>The <strong>EVO project</strong> addresses this bottleneck by engineering the embedded powertrain software and its validation infrastructure simultaneously. This approach moves validation to the earliest phases of the development lifecycle, enabling:</p>
+    <ul>
+      <li>Full-stack validation of proprietary embedded logic across both traction and auxiliary power domains.</li>
+      <li>Fault injection at scale without physical risk to high-voltage systems or live DC Fast Charging infrastructure.</li>
+      <li>Rapid iteration of CCS charging handshake sequences without requiring a physical EVSE station.</li>
+      <li>Earlier detection of system-level integration defects between the BMS, VCU, and charging subsystems.</li>
+    </ul>
+
+    <h2 id="arch">2. System Architecture</h2>
+    <p>EVO vHIL is structured as a layered, loosely coupled architecture. Each layer operates in an isolated execution environment and communicates with adjacent layers through well-defined interfaces. This separation ensures that failures in any single layer — particularly the UI application layer — cannot compromise core powertrain safety logic.</p>
+    <p>The system is composed of <strong>six primary layers:</strong></p>
+    <table>
+      <thead><tr><th>Layer</th><th>Component</th><th>Technology</th></tr></thead>
+      <tbody>
+        <tr><td>Embedded Powertrain</td><td>Pre-Production BMS Firmware (84S HV + 4S LV)</td><td><code>Custom C / RTOS</code></td></tr>
+        <tr><td>Simulation Environment</td><td>MCU Hardware Emulator</td><td><code>Renode</code></td></tr>
+        <tr><td>Communication Bridge</td><td>Middleware Protocol Translator</td><td><code>Python / Socket I/O</code></td></tr>
+        <tr><td>Control & Safety</td><td>VCU Safety Daemon</td><td><code>Native C++ / AAOS</code></td></tr>
+        <tr><td>CCS Charging Interface</td><td>Linux User-Space SPI Driver + PLC Modem</td><td><code>spidev / ISO 15118</code></td></tr>
+        <tr><td>Application</td><td>Dashboard UI</td><td><code>VHAL / Android UI</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="bms">3. Embedded Powertrain — BMS Firmware</h2>
+    <p>Unlike standard vHIL testbenches that rely on generic simulation scripts, the EVO architecture runs a <strong>custom-engineered, pre-production Battery Management System firmware written in C</strong>. Executed within an RTOS environment on a simulated 32-bit microcontroller (via Renode), the firmware is hardware-agnostic and completely unaware of its simulated execution context — ensuring that validation results are fully representative of production behavior.</p>
+
+    <h3>3.1 BMS Power State Machine</h3>
+    <p>The BMS firmware implements a formally structured power state machine governing all high-voltage contactor operations. Each state transition is conditional, safety-gated, and executed in a defined sequence to prevent destructive electrical events.</p>
+    <p>States: <code>INIT → STANDBY → PRECHARGE → DRIVE</code> (normal path) and <code>STANDBY → CHARGE</code> (charging path). Any fault transitions immediately to <code>FAULT</code>, which requires explicit clearance to reset.</p>
+
+    <h3>3.2 Core Safety Patterns</h3>
+    <ul>
+      <li><strong>Capacitive Precharge Enforcement:</strong> Verifies motor-side bus voltage before allowing the main positive contactor to close.</li>
+      <li><strong>VCU Deadman Switch:</strong> Monitors VCU heartbeat; initiates isolation unilaterally if heartbeat is lost.</li>
+      <li><strong>Weld Detection at Standby:</strong> Samples motor-side voltage before transitioning to PRECHARGE; faults if HV detected while contactors should be open.</li>
+      <li><strong>Non-Blocking Relay Sequencing:</strong> Uses RTOS tick counters and step-flags rather than blocking delays — no safety monitoring is suspended during contactor transitions.</li>
+    </ul>
+
+    <h3>3.3 Dual-Pack Topology & Dedicated LV Failsafe</h3>
+    <p>The EVO architecture departs from conventional EV design by eliminating the DC-DC converter as the primary source of 12V auxiliary power. A physically independent 4S lithium pack powers the vehicle's low-voltage rail. The BMS manages both packs simultaneously within the same RTOS environment, treating LV state-of-health as a first-class safety signal.</p>
+    <blockquote><p>Because the 4S pack is electrically independent from the traction system, a total failure of the 84S pack does not affect the 12V rail. The VCU continues to execute, the contactor coils remain powered, and the BMS retains full authority to sequence a controlled shutdown.</p></blockquote>
+
+    <h2 id="bridge">4. Communication Bridge</h2>
+    <p>The BMS simulation and the Android OS execute in isolated network environments. A custom middleware bridge serves as a protocol translator and network orchestrator between the two domains, performing stream parsing, protocol encoding, and cross-boundary injection via socket interfaces.</p>
+    <p>This layer is the key enabler of deterministic fault injection — by intercepting the data stream before it reaches the VCU, testers can reliably reproduce edge cases that would be difficult or impossible to generate with physical hardware.</p>
+
+    <h2 id="aaos">5. Android Automotive OS Integration & SPI Driver</h2>
+    <p>The core vehicle control logic is implemented as a <strong>native C++ daemon</strong> executing within the AAOS vendor partition. Telemetry is broadcast to the UI layer via UDP/UNIX sockets using a strict one-way publish model — a crash in the UI process cannot propagate upstream to affect the VCU safety loop.</p>
+
+    <h3>5.1 Linux User-Space SPI Driver for CCS Fast Charging</h3>
+    <p>Rather than routing PLC modem communication through the standard Android HAL, the EVO VCU daemon implements a <strong>direct Linux user-space SPI driver</strong> via the native kernel SPI device interface. This achieves the latency characteristics required to maintain the ISO 15118 TCP/IPv6 handshake — standard Android HAL abstraction introduces scheduling variability incompatible with the PLC protocol timing budget.</p>
+    <p>The VCU enforces three externally observable charging guarantees: no premature HV enable, continuous (not sampled) energy validation, and unilateral BMS authority to terminate any session at any time regardless of ISO 15118 negotiation state.</p>
+
+    <h2 id="safety">6. Safety Model</h2>
+    <p>The VCU daemon implements a safety validation model inspired by <strong>ISO 26262 ASIL</strong> design principles. The model enforces a fail-safe posture by default: any violation of a safety invariant results in an immediate <strong>System Inhibit</strong> — isolation of the high-voltage contactor and cessation of drive or charge commands.</p>
+    <p>The three-stage safety check pipeline evaluates: (1) Network Watchdog timeout, (2) Integer-Math Plausibility Firewall, (3) Critical Node Fault presence. All three must pass for normal operation to be permitted.</p>
+    <p>The Integer-Math Plausibility Firewall uses <strong>strict integer mathematics throughout</strong> — floating-point operations have non-deterministic execution time on embedded targets. The tolerance floor is dynamic, adjusting at low states of charge to prevent false-positive fault trips.</p>
+
+    <h2 id="faults">7. Fault Injection & Validation</h2>
+    <p>Six fault scenarios have been validated:</p>
+    <table>
+      <thead><tr><th>Scenario</th><th>Injection</th><th>Expected Response</th></tr></thead>
+      <tbody>
+        <tr><td>Overvoltage Event</td><td>Corrupt HV cell voltage fields above threshold</td><td>System Inhibit — Contactor Drop</td></tr>
+        <tr><td>Sensor Variance Mismatch</td><td>Delta between cell sum and pack aggregate</td><td>Plausibility Fault — System Inhibit</td></tr>
+        <tr><td>Phantom Node (CAN Loss)</td><td>Drop all frames from critical participant</td><td>Watchdog Timeout — System Inhibit</td></tr>
+        <tr><td>LV Pack Under-Voltage</td><td>Drive 4S aux toward critical threshold</td><td>Graceful Isolation — Controlled Shutdown</td></tr>
+        <tr><td>Rogue Charger Overcurrent</td><td>Inject EVSE telemetry exceeding demand</td><td>Rogue Charger Fault — Relay Severed</td></tr>
+        <tr><td>Thermal Runaway</td><td>Escalate temperature sensors to critical</td><td>Thermal Fault — Highest Priority Inhibit</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="ci">8. Repeatability & CI Orchestration</h2>
+    <p>The orchestration layer manages the deterministic boot sequence: Virtual Android OS → MCU Simulation → VCU Daemon → CAN+UDP Bridge → OS Boot Flag Poll → Environment Ready. The orchestrator polls the Android boot completion flag before establishing inter-layer tunnels, preventing race conditions and guaranteeing a known-good system state before any test scenario executes.</p>
+
+    <h2 id="results">9. Results</h2>
+    <p>Initial integration testing successfully demonstrated: closed-loop communication stability with no packet loss under nominal conditions; powertrain/UI isolation verified (UI termination caused no disruption to VCU); plausibility firewall enforcement on corrupted frames; non-permanent-latching fault recovery; direct SPI hardware control at the required clock speed; and dual-pack LV resilience through simulated catastrophic HV failure.</p>
+
+    <h2 id="limitations">10. Limitations</h2>
+    <ul>
+      <li><strong>Timing Determinism:</strong> Governed by host OS scheduler — not RTOS-level microsecond determinism.</li>
+      <li><strong>ISO 15118 Stack Completeness:</strong> Full end-to-end CCS handshake validation requires TUN/TAP network bridging beyond current scope.</li>
+      <li><strong>Single-Instance Deployment:</strong> Constrained to single-instance, local execution — distributed or cloud-scale not yet supported.</li>
+    </ul>
+
+    <h2 id="future">11. Future Work</h2>
+    <ul>
+      <li>Full PLC network simulation via virtual TUN/TAP interface for complete CCS session validation.</li>
+      <li>Physical hardware flash — deploying validated BMS firmware to STM32 silicon and pairing with a physical HomePlug Green PHY modem.</li>
+      <li>Docker/Kubernetes containerization for cloud-scale parallel test execution.</li>
+      <li>Virtualized Field-Oriented Control (FOC) motor simulation to extend scope to full traction system validation.</li>
+    </ul>
+
+    <h2 id="conclusion">12. Conclusion</h2>
+    <p>The <strong>EVO architecture</strong> demonstrates that the concurrent development of full-stack embedded powertrain logic, Android OS integration, and high-speed peripheral drivers for DC Fast Charging is highly achievable using a virtualized pipeline — without bespoke hardware or proprietary simulation platforms.</p>
+    <p>By combining a dedicated 4S LV failsafe topology, a direct Linux user-space SPI driver for CCS communication, and production-intent RTOS firmware managing both traction and auxiliary packs, the platform reflects a flagship-tier EV architecture. The path from validated firmware to physical silicon — flashing the same BMS code onto a microcontroller and pairing it with a real PLC modem — is a direct next step that this architecture is explicitly designed to enable.</p>
+    <blockquote><p>EVO vHIL represents a working implementation of the software-defined vehicle development future.</p></blockquote>
+
+    <div class="mt-4" style="border-top: 1px solid var(--border); padding-top: 1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+      <span class="badge badge-cyan">EVO vHIL White Paper</span>
+      <span class="badge badge-amber">Revision 1.3</span>
+      <span class="badge badge-cyan">Classification: Public</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">EVO vHIL</div>
+      <div class="footer-meta mt-1">Technical White Paper · Revision 1.3</div>
+    </div>
+    <nav class="footer-nav">
+      <a href="proof.html">← Proof</a>
+      <a href="index.html">Home</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

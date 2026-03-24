@@ -32,10 +32,8 @@
       color: var(--text-dim); letter-spacing: 0.08em;
       margin-left: auto; text-transform: uppercase;
     }
-    .terminal-title {
-      font-family: var(--mono); font-size: 0.74rem; color: var(--text-dim);
-    }
-    .terminal-body { padding: 1.1rem 1.3rem; overflow-x: auto; white-space: pre; }
+    .terminal-title { font-family: var(--mono); font-size: 0.74rem; color: var(--text-dim); }
+    .terminal-body  { padding: 1.1rem 1.3rem; overflow-x: auto; white-space: pre; }
     .t-prompt { color: #3b82f6; }
     .t-dim    { color: #3d5060; }
     .t-ok     { color: var(--green); }
@@ -45,14 +43,7 @@
     .t-hi     { color: var(--text-hi); }
     @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
     .t-blink::after { content:'█'; animation:blink 1.1s step-end infinite; color:var(--cyan); }
-
-    .masked {
-      background: rgba(0,212,255,0.08);
-      border: 1px solid rgba(0,212,255,0.18);
-      border-radius: 3px; padding: 0 4px;
-      color: var(--text-dim); font-style: italic; cursor: help;
-    }
-    .masked::after { content:' ⊘'; font-size:0.7em; opacity:0.5; }
+    .t-mask   { color:#607080; font-style:italic; }
 
     @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .live-dot {
@@ -94,29 +85,63 @@
     }
     .decode-table tr:hover td { background:var(--cyan-dim); }
 
-    /* Screenshot upload slot */
-    .screenshot-slot {
-      border: 2px dashed rgba(0,212,255,0.28);
+    /* ── STATIC screenshot frame ─────────────────────────────── */
+    .screenshot-frame {
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: rgba(0,212,255,0.025);
-      padding: 2.5rem 1.5rem; text-align: center; margin: 1rem 0;
-      cursor: pointer; transition: all 0.2s; position: relative;
-      min-height: 150px; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 0.65rem;
+      overflow: hidden;
+      margin: 1rem 0;
+      background: #030508;
     }
-    .screenshot-slot:hover {
-      border-color: rgba(0,212,255,0.55); background:rgba(0,212,255,0.05);
+    .screenshot-frame-bar {
+      background: #0d1321;
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex; align-items: center; gap: 0.6rem;
     }
-    .screenshot-slot input[type="file"] {
-      position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+    .screenshot-frame img {
+      width: 100%; display: block;
     }
-    .slot-icon { font-size:1.8rem; opacity:0.45; }
-    .slot-label {
-      font-family:var(--mono); font-size:0.76rem; color:var(--cyan);
+
+    /* ── STATIC pending placeholder (no interaction) ─────────── */
+    .screenshot-pending {
+      border: 2px dashed rgba(0,212,255,0.18);
+      border-radius: 8px;
+      background: rgba(0,212,255,0.02);
+      padding: 2rem 1.5rem; text-align: center; margin: 1rem 0;
+      min-height: 110px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.5rem;
+      pointer-events: none; user-select: none;
+    }
+    .pending-label {
+      font-family:var(--mono); font-size:0.73rem; color:var(--text-dim);
       letter-spacing:0.08em; text-transform:uppercase;
     }
-    .slot-hint { font-family:var(--mono); font-size:0.69rem; color:var(--text-dim); }
-    .slot-preview { max-width:100%; max-height:420px; border-radius:5px; display:none; }
+    .pending-hint { font-family:var(--mono); font-size:0.68rem; color:#2a3a4a; }
+
+    /* ── SYNC indicator ──────────────────────────────────────── */
+    @keyframes sync-pulse {
+      0%,100% { box-shadow: 0 0 6px rgba(34,197,94,0.6); }
+      50%      { box-shadow: 0 0 18px rgba(34,197,94,0.9), 0 0 40px rgba(34,197,94,0.3); }
+    }
+    .sync-dot {
+      display:inline-block; width:10px; height:10px;
+      background:#22c55e; border-radius:50%;
+      animation:sync-pulse 2s ease-in-out infinite;
+    }
+    .sync-annotation {
+      background: var(--bg-card);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-left: 3px solid #22c55e;
+      border-radius: 0 6px 6px 0;
+      padding: 1rem 1.25rem;
+      margin-top: 1rem;
+      position: relative;
+    }
+    .sync-annotation-tag {
+      font-family:var(--mono); font-size:0.68rem; color:#22c55e;
+      letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.4rem;
+    }
   </style>
 </head>
 <body>
@@ -152,6 +177,67 @@
 </div>
 
 
+<!-- ══════════════════════════════════════════════════════════════
+     MILESTONE PROOF — THE SYNC DOT
+═══════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Full-Stack Milestone</div>
+      <h2 class="section-title">The Glowing Green SYNC</h2>
+      <p class="section-lead">A single indicator that represents every layer of the architecture operating simultaneously.</p>
+    </div>
+
+    <div class="screenshot-frame">
+      <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">Android Emulator · Automotive_1408p_landscape · AAOS Dashboard UI</span>
+        <div class="terminal-status"><span class="live-dot"></span>HIL Pipeline Active</div>
+      </div>
+      <img src="images/milestone.png" alt="SYNC Milestone Screenshot">
+    </div>
+
+    <!-- ANNOTATION CALLOUTS -->
+    <div class="two-col mt-3" style="gap:1.5rem; align-items:start;">
+      <div>
+        <div class="sync-annotation">
+          <div class="sync-annotation-tag">The SYNC Indicator <span class="sync-dot"></span></div>
+          <p style="margin:0; font-size:0.93rem;">That single glowing green dot is the visual proof of a fully realized HIL pipeline spanning multiple operating systems and architectures. It means the bridge is complete — the simulated STM32 RTOS is firing CAN frames, the Python Wormhole is catching them, the ADB tunnel is routing them through the firewall, and the Android Automotive C++ Daemon is unpacking telemetry in real-time.</p>
+        </div>
+
+        <div class="callout red mt-3">
+          <h4 style="margin-bottom:0.5rem;">The Zeros Are Not a Failure</h4>
+          <p style="margin:0; font-size:0.93rem;">The dashboard showing <strong>0V and 0A</strong> is not a communication failure — it is the flawless execution of the ASIL-D Safety Architecture. Because the simulation had just booted and individual cell voltages were not yet propagated to match total pack voltage, the VCU's Plausibility Firewall detected a mathematical mismatch, ruthlessly severed the high-voltage contactor commands, and safely isolated the vehicle.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="callout cyan">
+          <h4 style="margin-bottom:0.5rem;">What the Background Terminal Confirms</h4>
+          <p style="margin:0.5rem 0; font-size:0.93rem;">The PowerShell terminal behind the emulator shows Renode successfully loading the <span class="t-mask">[target]</span> SVD and booting the BMS machine — STM32F4x peripherals initializing, DMA controllers configuring, USART1 coming online. The BMS firmware is executing on a simulated MCU while the AAOS dashboard renders its state in real-time.</p>
+        </div>
+
+        <div class="card mt-3">
+          <h4>Pipeline Layers Active Simultaneously</h4>
+          <ul class="feature-list mt-2" style="font-size:0.88rem;">
+            <li><span class="icon" style="color:var(--green)">✓</span><span>Renode MCU emulator · STM32F4x · BMS firmware running</span></li>
+            <li><span class="icon" style="color:var(--green)">✓</span><span>Python Wormhole · CAN frame capture and injection</span></li>
+            <li><span class="icon" style="color:var(--green)">✓</span><span>ADB tunnel · UDP routing through Android firewall</span></li>
+            <li><span class="icon" style="color:var(--green)">✓</span><span>C++ VCU Daemon · live telemetry unpacking</span></li>
+            <li><span class="icon" style="color:var(--green)">✓</span><span>AAOS Dashboard UI · VHAL state reflected</span></li>
+            <li><span class="icon" style="color:var(--red)">✓</span><span>Plausibility Firewall · mismatch detected, HV isolated</span></li>
+          </ul>
+        </div>
+
+        <div class="callout mt-3">
+          <p style="margin:0; font-size:0.93rem; font-style:italic;">"It is a digital twin acting with the exact same uncompromising safety as the physical motorcycle. The network is alive, the VCU is listening, and the firewall is standing guard."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <!-- ═══ T1: VCU DAEMON ══════════════════════════════════════════ -->
 <section class="section">
   <div class="container">
@@ -164,17 +250,18 @@
             <code>/vendor/bin/evo_vcu_daemon</code> · AAOS Vendor Partition · V2.0 ASIL-D
           </div>
         </div>
-        <span class="badge badge-green">📸 Screenshot Priority: HIGH</span>
+        <!-- <span class="badge badge-amber">Screenshot Pending</span> -->
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-slot" id="slot1">
-          <input type="file" accept="image/*" onchange="loadImg(this,'slot1')">
-          <img class="slot-preview" id="img-slot1" alt="">
-          <div class="slot-icon">📸</div>
-          <div class="slot-label">Upload Terminal 1 Screenshot</div>
-          <div class="slot-hint">VCU daemon boot sequence · fault triggers · HIL mode activation</div>
-        </div>
+      
+          <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">VCU daemon boot · fault triggers</span>
+        <div class="terminal-status"><span class="live-dot"></span>HIL mode activation</div>
+      </div>
+      <img src="images/t1.png" alt="Terminal 1 Screenshot">
+      </div>
 
         <div class="callout cyan mt-3 mb-3">
           <p>The trace shows the daemon completing initialization, entering HIL simulation mode (widening the CAN watchdog timeout for virtual bridge latency), then triggering two fault codes in sequence — <code>CAN_TIMEOUT</code> before the BMS bridge is established, and <code>THERMAL_SHUTDOWN</code> once a live thermal fault is injected via the middleware.</p>
@@ -183,21 +270,21 @@
         <div class="terminal">
           <div class="terminal-bar">
             <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
-            <span class="terminal-title">emulator_<span class="masked">target_arch</span>:/ #</span>
+            <span class="terminal-title">emulator_<span class="t-mask">[target]</span>:/ #</span>
             <span class="terminal-label">VCU Daemon · AAOS</span>
           </div>
-          <div class="terminal-body"><span class="t-prompt">emulator_<span style="color:#607080;font-style:italic;">[target]</span>:/ # </span><span class="t-hi">/vendor/bin/evo_vcu_daemon</span>
+          <div class="terminal-body"><span class="t-prompt">emulator_<span class="t-mask">[target]</span>:/ # </span><span class="t-hi">/vendor/bin/evo_vcu_daemon</span>
 
 <span class="t-cyan">Starting EVOlution V2.0 Secure Daemon...</span>
-<span class="t-dim">[INIT] Compiling for SIMULATION (UDP CAN Tunnel on Port <span style="color:#607080;font-style:italic;">[PORT_A]</span>)</span>
-<span class="t-ok">[HIL] VIRTUAL CAN LISTENER ONLINE (Port <span style="color:#607080;font-style:italic;">[PORT_A]</span>)</span>
+<span class="t-dim">[INIT] Compiling for SIMULATION (UDP CAN Tunnel on Port <span class="t-mask">[PORT_A]</span>)</span>
+<span class="t-ok">[HIL] VIRTUAL CAN LISTENER ONLINE (Port <span class="t-mask">[PORT_A]</span>)</span>
 <span class="t-dim">=============================================</span>
 <span class="t-cyan">🚀 EVO VCU DAEMON ONLINE (V2.0 ASIL-D)</span>
 <span class="t-ok">🛡️  Gateway Firewall Active. Enforcing Plausibility.</span>
 <span class="t-dim">=============================================</span>
 <span class="t-dim">[EMULATOR] handlebarGestureListener initialized (HARDWARE MOCKED)</span>
 <span class="t-dim">[EMULATOR] systemSensorsListener initialized (HARDWARE MOCKED)</span>
-<span class="t-dim">[<span style="color:#607080;font-style:italic;">[MOSFET_DRV]</span>] Demanding: 0V @ 0A</span>
+<span class="t-dim">[<span class="t-mask">[MOSFET_DRV]</span>] Demanding: 0V @ 0A</span>
 <span class="t-err">🚨 FATAL ERROR TRIGGERED: SYS_KILL:CAN_TIMEOUT 🚨</span>
 <span class="t-warn">[⚙️  HIL] SIMULATION MODE ACTIVE. Plausibility Bypassed. Timeout widened.</span>
 <span class="t-err">🚨 FATAL ERROR TRIGGERED: SYS_KILL:THERMAL_SHUTDOWN 🚨</span>
@@ -207,15 +294,15 @@
         <div class="card-grid mt-3" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr));">
           <div class="card">
             <h4>CAN_TIMEOUT on Boot</h4>
-            <div class="card-body mt-1">Expected behavior — the watchdog fires on the first silence window before the middleware bridge finishes establishing. Confirms the deadman switch is active immediately from boot, not after a grace period.</div>
+            <div class="card-body mt-1">Expected behavior — the watchdog fires on the first silence window before the middleware bridge establishes. Confirms the deadman switch is live from boot, not after a grace period.</div>
           </div>
           <div class="card">
             <h4>HIL Mode Widening</h4>
-            <div class="card-body mt-1">Daemon correctly detects SIMULATION build flag and widens the CAN timeout threshold to accommodate virtual bridge latency. Production timeout values are enforced on physical hardware builds.</div>
+            <div class="card-body mt-1">Daemon detects SIMULATION build flag and widens the CAN timeout threshold to accommodate virtual bridge latency. Production timeout values enforce on physical hardware builds.</div>
           </div>
           <div class="card">
             <h4>THERMAL_SHUTDOWN Live</h4>
-            <div class="card-body mt-1">Injected mid-session via middleware. Confirms P1 thermal fault priority fires correctly and propagates through to the daemon's <code>SYS_KILL</code> handler — matching the defined fault priority hierarchy.</div>
+            <div class="card-body mt-1">Injected mid-session via middleware. Confirms P1 thermal fault priority fires correctly and propagates through to the daemon's <code>SYS_KILL</code> handler — matching the defined fault hierarchy.</div>
           </div>
         </div>
       </div>
@@ -231,17 +318,18 @@
             Persistent append-only ledger · Every <code>SYS_KILL</code> written with full powertrain snapshot
           </div>
         </div>
-        <span class="badge badge-green">📸 Screenshot Priority: HIGH</span>
+        <!-- <span class="badge badge-amber">Screenshot Pending</span> -->
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-slot" id="slot2">
-          <input type="file" accept="image/*" onchange="loadImg(this,'slot2')">
-          <img class="slot-preview" id="img-slot2" alt="">
-          <div class="slot-icon">📸</div>
-          <div class="slot-label">Upload Terminal 2 Screenshot</div>
-          <div class="slot-hint">Black-box fault log — timestamped SYS_KILL events with powertrain snapshot</div>
-        </div>
+        
+          <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">Black-box fault log — timestamped SYS_KILL events with powertrain snapshot</span>
+        <div class="terminal-status"><span class="live-dot"></span>Black-box</div>
+      </div>
+      <img src="images/t2.png" alt="Terminal 2 Screenshot">
+      </div>
 
         <div class="callout amber mt-3 mb-3">
           <p>Six fault events across a ~58-minute session. The first four entries show zero-value telemetry — expected, as the BMS bridge was not yet connected. Entries at <strong>15:40</strong> and <strong>16:08</strong> are the key data points: they capture live BMS telemetry (298.9V, 25A, 85% SOC) at the exact moment of fault, confirming end-to-end CAN delivery was active.</p>
@@ -257,9 +345,9 @@
 <span class="t-dim">[2026-03-24 15:13:54.065]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-warn">[CODE:00 - CAN_TIMEOUT]</span>    <span class="t-dim">V:0.0  A:0.0  SOC:0.0  T_MAX:0.0  STATE:0  12V:0.0</span>
 <span class="t-dim">[2026-03-24 15:14:30.459]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-warn">[CODE:00 - CAN_TIMEOUT]</span>    <span class="t-dim">V:0.0  A:0.0  SOC:0.0  T_MAX:0.0  STATE:0  12V:0.0</span>
 <span class="t-dim">[2026-03-24 15:20:32.575]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-warn">[CODE:00 - CAN_TIMEOUT]</span>    <span class="t-dim">V:0.0  A:0.0  SOC:0.0  T_MAX:0.0  STATE:0  12V:0.0</span>
-<span class="t-dim">  ·  ·  ·  ·  ·  ·  ·  BMS bridge offline — expected during init  ·  ·  ·  ·  ·  ·  ·</span>
-<span class="t-dim">[2026-03-24 15:40:49.737]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-err">[CODE:08 - THERMAL_SHUTDOWN]</span> <span class="t-ok">V:298.9  A:25.0  SOC:85.0</span>  <span class="t-err">T_MAX:85.0</span>  <span class="t-ok">STATE:5</span>  <span class="t-dim">12V:<span style="color:#607080;font-style:italic;">[LV_RAIL]</span></span>
-<span class="t-dim">[2026-03-24 16:08:07.686]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-warn">[CODE:08 - CAN_TIMEOUT]</span>    <span class="t-ok">V:298.9  A:25.0  SOC:85.0  T_MAX:85.0  STATE:5</span>  <span class="t-dim">12V:<span style="color:#607080;font-style:italic;">[LV_RAIL]</span></span><span class="t-blink"></span></div>
+<span class="t-dim">  ·  ·  ·  BMS bridge offline — expected during init  ·  ·  ·</span>
+<span class="t-dim">[2026-03-24 15:40:49.737]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-err">[CODE:08 - THERMAL_SHUTDOWN]</span> <span class="t-ok">V:298.9  A:25.0  SOC:85.0</span>  <span class="t-err">T_MAX:85.0</span>  <span class="t-ok">STATE:5</span>  <span class="t-dim">12V:<span class="t-mask">[LV_RAIL]</span></span>
+<span class="t-dim">[2026-03-24 16:08:07.686]</span> <span class="t-err">[SYS_KILL]</span> <span class="t-warn">[CODE:08 - CAN_TIMEOUT]</span>    <span class="t-ok">V:298.9  A:25.0  SOC:85.0  T_MAX:85.0  STATE:5</span>  <span class="t-dim">12V:<span class="t-mask">[LV_RAIL]</span></span><span class="t-blink"></span></div>
         </div>
 
         <h4 style="margin-top:1.75rem; margin-bottom:0.85rem;">Black-Box Field Definitions</h4>
@@ -268,12 +356,12 @@
             <thead><tr><th>Field</th><th>Meaning</th><th>Units</th><th>Significance in Final Two Entries</th></tr></thead>
             <tbody>
               <tr><td><code>CODE</code></td><td>Fault Code</td><td>enum</td><td><code>00</code> = watchdog timeout · <code>08</code> = thermal threshold breach</td></tr>
-              <tr><td><code>V</code></td><td>Pack Voltage</td><td>V</td><td><strong style="color:var(--green)">298.9V</strong> — live HV telemetry confirmed on CAN. BMS bridge active.</td></tr>
-              <tr><td><code>A</code></td><td>Pack Current</td><td>A</td><td><strong style="color:var(--green)">25.0A</strong> — discharge current present at the moment of fault.</td></tr>
-              <tr><td><code>SOC</code></td><td>State of Charge</td><td>%</td><td><strong style="color:var(--green)">85%</strong> — healthy pack. Fault was thermal, not capacity-related.</td></tr>
-              <tr><td><code>T_MAX</code></td><td>Max Cell Temperature</td><td>°C</td><td><strong style="color:var(--red)">85°C</strong> — injected at thermal threshold boundary. P1 priority triggered.</td></tr>
-              <tr><td><code>STATE</code></td><td>BMS State Machine State</td><td>enum</td><td><code>5</code> = DRIVE state was active at the moment of fault.</td></tr>
-              <tr><td><code>12V</code></td><td>LV Auxiliary Rail</td><td>V</td><td>Value abstracted. Field presence confirms LV rail is monitored independently of HV.</td></tr>
+              <tr><td><code>V</code></td><td>Pack Voltage</td><td>V</td><td><strong style="color:var(--green)">298.9V</strong> — live HV telemetry confirmed on CAN</td></tr>
+              <tr><td><code>A</code></td><td>Pack Current</td><td>A</td><td><strong style="color:var(--green)">25.0A</strong> — discharge current present at fault moment</td></tr>
+              <tr><td><code>SOC</code></td><td>State of Charge</td><td>%</td><td><strong style="color:var(--green)">85%</strong> — healthy pack; fault was thermal, not capacity</td></tr>
+              <tr><td><code>T_MAX</code></td><td>Max Cell Temperature</td><td>°C</td><td><strong style="color:var(--red)">85°C</strong> — injected at thermal threshold boundary</td></tr>
+              <tr><td><code>STATE</code></td><td>BMS State Machine State</td><td>enum</td><td><code>5</code> = DRIVE state active at moment of fault</td></tr>
+              <tr><td><code>12V</code></td><td>LV Auxiliary Rail</td><td>V</td><td>Abstracted — field confirms LV rail monitored independently</td></tr>
             </tbody>
           </table>
         </div>
@@ -287,67 +375,54 @@
         <div>
           <div class="terminal-section-title">Terminal 3 — VCU Live State Stream</div>
           <div style="font-family:var(--mono); font-size:0.73rem; color:var(--text-dim); margin-top:0.25rem;">
-            <code>adb shell</code> → <code>nc -u -l -p <span class="masked">[PORT_B]</span></code> · UDP one-way broadcast from VCU daemon to host
+            <code>adb shell</code> → <code>nc -u -l -p <span class="t-mask">[PORT_B]</span></code> · UDP one-way broadcast from VCU daemon to host
           </div>
         </div>
-        <span class="badge badge-green">📸 Screenshot Priority: HIGH</span>
+        <!-- <span class="badge badge-amber">Screenshot Pending</span> -->
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-slot" id="slot3">
-          <input type="file" accept="image/*" onchange="loadImg(this,'slot3')">
-          <img class="slot-preview" id="img-slot3" alt="">
-          <div class="slot-icon">📸</div>
-          <div class="slot-label">Upload Terminal 3 Screenshot</div>
-          <div class="slot-hint">adb shell netcat — live UDP state frames from VCU daemon to host</div>
-        </div>
+        
+
+        <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">adb shell netcat — live UDP state frames from VCU daemon</span>
+        <div class="terminal-status"><span class="live-dot"></span>VCU daemon</div>
+      </div>
+      <img src="images/t3.png" alt="Terminal 3 Screenshot">
+      </div>
 
         <div class="callout cyan mt-3 mb-3">
-          <p>Two consecutive <code>nc</code> sessions demonstrate non-permanent-latching fault recovery. Session 1 catches a live <code>THERMAL_SHUTDOWN</code> frame in-flight. Session 2, started after fault clearance, shows <code>SYSTEM_OK</code> — the system returned to normal operation without a cold restart. Both sessions show identical pack telemetry, confirming the BMS remained online throughout the fault cycle.</p>
+          <p>Two consecutive <code>nc</code> sessions demonstrate non-permanent-latching fault recovery. Session 1 catches a live <code>THERMAL_SHUTDOWN</code> frame in-flight. Session 2, after fault clearance, shows <code>SYSTEM_OK</code> — the system returned to normal operation without a cold restart.</p>
         </div>
 
         <div class="terminal">
           <div class="terminal-bar">
             <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
-            <span class="terminal-title">C:\Users\<span class="masked">[user]</span>&gt; adb shell</span>
+            <span class="terminal-title">C:\Users\<span class="t-mask">[user]</span>&gt; adb shell</span>
             <span class="terminal-label">Host → AAOS · ADB</span>
           </div>
           <div class="terminal-body"><span class="t-dim">— Session 1 —</span>
-<span class="t-prompt">C:\Users\<span style="color:#607080;font-style:italic;">[user]</span>&gt; </span><span class="t-hi">adb shell "nc -u -l -p <span style="color:#607080;font-style:italic;">[PORT_B]</span>"</span>
+<span class="t-prompt">C:\Users\<span class="t-mask">[user]</span>&gt; </span><span class="t-hi">adb shell "nc -u -l -p <span class="t-mask">[PORT_B]</span>"</span>
 
 <span class="t-err">STATE:5|FAULT:THERMAL_SHUTDOWN</span><span class="t-ok">|V_PACK:298.899994|A_PACK:25.000000|SOC:85.000000</span><span class="t-dim">|XESC_RPM:0.000000|XESC_TMP:0.000000</span>
 <span class="t-dim">^C</span>
 
 <span class="t-dim">— Session 2 (post fault clearance) —</span>
-<span class="t-prompt">C:\Users\<span style="color:#607080;font-style:italic;">[user]</span>&gt; </span><span class="t-hi">adb shell "nc -u -l -p <span style="color:#607080;font-style:italic;">[PORT_B]</span>"</span>
+<span class="t-prompt">C:\Users\<span class="t-mask">[user]</span>&gt; </span><span class="t-hi">adb shell "nc -u -l -p <span class="t-mask">[PORT_B]</span>"</span>
 
 <span class="t-ok">STATE:4|FAULT:SYSTEM_OK|V_PACK:298.899994|A_PACK:25.000000|SOC:85.000000</span><span class="t-dim">|XESC_RPM:0.000000|XESC_TMP:0.000000<span class="t-blink"></span></span></div>
         </div>
 
-        <h4 style="margin-top:1.75rem; margin-bottom:0.85rem;">State Frame Field Definitions</h4>
-        <div class="diagram-wrap" style="padding:0; overflow:auto;">
-          <table class="decode-table">
-            <thead><tr><th>Field</th><th>Description</th><th>Session 1</th><th>Session 2</th></tr></thead>
-            <tbody>
-              <tr><td><code>STATE</code></td><td>BMS power state enum</td><td><span class="badge badge-red">5 · FAULT</span></td><td><span class="badge badge-cyan">4 · DRIVE</span></td></tr>
-              <tr><td><code>FAULT</code></td><td>Active fault code</td><td><span class="badge badge-red">THERMAL_SHUTDOWN</span></td><td><span class="badge badge-green">SYSTEM_OK</span></td></tr>
-              <tr><td><code>V_PACK</code></td><td>HV traction pack voltage</td><td><strong style="color:var(--green)">298.9V</strong></td><td><strong style="color:var(--green)">298.9V</strong></td></tr>
-              <tr><td><code>A_PACK</code></td><td>Pack current (discharge)</td><td>25.0A</td><td>25.0A</td></tr>
-              <tr><td><code>SOC</code></td><td>State of charge</td><td>85.0%</td><td>85.0%</td></tr>
-              <tr><td><code>XESC_RPM</code></td><td>Motor controller shaft speed</td><td>0.0 · stationary</td><td>0.0 · stationary</td></tr>
-              <tr><td><code>XESC_TMP</code></td><td>Motor controller temperature</td><td>0.0</td><td>0.0</td></tr>
-            </tbody>
-          </table>
-        </div>
         <div class="callout mt-3">
           <h4 style="margin-bottom:0.5rem;">Non-Permanent-Latching Verified</h4>
-          <p>The transition from <code>STATE:5 / THERMAL_SHUTDOWN</code> to <code>STATE:4 / SYSTEM_OK</code> between sessions confirms the safety model correctly returns to normal operation once the injected fault clears — without requiring a full cold restart. This is a required property for any powertrain supporting fault-and-recover cycles in service.</p>
+          <p>Transition from <code>STATE:5 / THERMAL_SHUTDOWN</code> to <code>STATE:4 / SYSTEM_OK</code> between sessions confirms the safety model returns to normal operation once the fault clears — without requiring a full cold restart. Required property for any powertrain supporting fault-and-recover cycles in service.</p>
         </div>
       </div>
     </div>
 
 
-    <!-- ═══ T4: MIDDLEWARE (no screenshot) ═══════════════════════ -->
+    <!-- ═══ T4: MIDDLEWARE ═══════════════════════════════════════ -->
     <div class="terminal-section">
       <div class="terminal-section-header">
         <div>
@@ -356,12 +431,11 @@
             <code>wormhole.py</code> · Stream parser → CAN encoder → UDP injector into AAOS network stack
           </div>
         </div>
-        <span class="badge badge-amber">📸 Screenshot: Optional</span>
+        <!-- <span class="badge badge-cyan">No Screenshot</span> -->
       </div>
       <div class="terminal-section-body">
-
         <div class="callout cyan mb-3">
-          <p>The middleware bridge receives raw USART telemetry from Renode, encodes each frame into a 29-bit Extended CAN structure, and injects it over the UDP tunnel into the Android OS network stack. The <code>Zapped →</code> line confirms each successful injection. Arbitration ID and 8-byte payload are abstracted below.</p>
+          <p>The middleware bridge receives raw USART telemetry from Renode, encodes each frame into a 29-bit Extended CAN structure, and injects it over the UDP tunnel into the Android OS network stack. The <code>Zapped →</code> line confirms each successful frame injection. Arbitration ID and payload are abstracted.</p>
         </div>
 
         <div class="terminal">
@@ -370,10 +444,10 @@
             <span class="terminal-title">wormhole.py · Python middleware bridge</span>
             <span class="terminal-label">CAN Bridge · Active</span>
           </div>
-          <div class="terminal-body"><span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span><span class="t-blink"></span></div>
+          <div class="terminal-body"><span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-dim">[16:19:32]</span> <span class="t-ok">Zapped →</span> <span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span><span class="t-blink"></span></div>
         </div>
 
         <div class="card-grid mt-3" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));">
@@ -383,11 +457,11 @@
           </div>
           <div class="card">
             <h4>Broadcast Cadence</h4>
-            <div class="card-body mt-1">Multiple frames within the same timestamp confirm the BMS firmware's deterministic clock-driven broadcast cadence is being faithfully relayed. Higher-criticality signals transmit at faster intervals.</div>
+            <div class="card-body mt-1">Multiple frames within the same timestamp confirm the BMS firmware's deterministic clock-driven broadcast cadence is faithfully relayed. Higher-criticality signals transmit at faster intervals.</div>
           </div>
           <div class="card">
             <h4>Zero Packet Loss</h4>
-            <div class="card-body mt-1">Every frame emitted by the BMS USART was received, encoded, and injected across the OS boundary. No drops observed under nominal operating conditions across the 58-minute session.</div>
+            <div class="card-body mt-1">Every frame emitted by the BMS USART was received, encoded, and injected across the OS boundary with no drops observed under nominal conditions across the 58-minute session.</div>
           </div>
         </div>
       </div>
@@ -403,20 +477,26 @@
             Simulated MCU USART1 · Raw CAN frame stream from BMS C/RTOS firmware · Hardware-agnostic
           </div>
         </div>
-        <span class="badge badge-green">📸 Screenshot Priority: HIGH</span>
+        <span class="badge badge-amber">Screenshot Pending</span>
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-slot" id="slot5">
-          <input type="file" accept="image/*" onchange="loadImg(this,'slot5')">
-          <img class="slot-preview" id="img-slot5" alt="">
-          <div class="slot-icon">📸</div>
-          <div class="slot-label">Upload Terminal 5 Screenshot</div>
-          <div class="slot-hint">Renode USART1 — raw CAN frame stream from BMS C firmware on simulated MCU</div>
+        <div class="screenshot-pending">
+          <div style="font-size:1.4rem; opacity:0.25;">🖥</div>
+          <div class="pending-label">Screenshot — Coming Soon</div>
+          <div class="pending-hint">Renode USART1 — raw CAN frames from BMS C firmware on simulated MCU</div>
         </div>
 
+        <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">Renode USART1 — raw CAN frames from BMS C firmware on simulated MCU</span>
+        <div class="terminal-status"><span class="live-dot"></span>Renode USART1</div>
+      </div>
+      <img src="images/t4.png" alt="Terminal 4 Screenshot">
+      </div>
+
         <div class="callout cyan mt-3 mb-3">
-          <p>This is the raw output from the simulated MCU's USART1 peripheral inside Renode — the BMS C firmware itself emitting CAN frames as it would over a physical serial-to-CAN interface on real silicon. The firmware is <strong>completely unaware it is running in simulation</strong>. The same frames, same arbitration ID, same payload structure will appear on the physical CAN bus when this firmware is flashed to target silicon.</p>
+          <p>This is the raw output from the simulated MCU's USART1 peripheral inside Renode — the BMS C firmware emitting CAN frames exactly as it would over a physical serial-to-CAN interface on real silicon. The firmware is <strong>completely unaware it is running in simulation</strong>. The same frame format will appear on the physical CAN bus when this firmware is flashed to target silicon.</p>
         </div>
 
         <div class="terminal">
@@ -425,28 +505,28 @@
             <span class="terminal-title">Renode · USART1 · BMS MCU Simulation</span>
             <div class="terminal-status"><span class="live-dot"></span>MCU Running</div>
           </div>
-          <div class="terminal-body"><span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span>
-<span class="t-cyan">CAN:</span><span style="color:#607080;font-style:italic;">[ARB_ID]</span><span class="t-cyan">#</span><span style="color:#607080;font-style:italic;">[PAYLOAD_8B]</span><span class="t-blink"></span></div>
+          <div class="terminal-body"><span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span>
+<span class="t-cyan">CAN:</span><span class="t-mask">[ARB_ID]</span><span class="t-cyan">#</span><span class="t-mask">[PAYLOAD_8B]</span><span class="t-blink"></span></div>
         </div>
 
         <div class="card-grid mt-3" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr));">
           <div class="card">
             <h4>Deterministic Cadence</h4>
-            <div class="card-body mt-1">8 consecutive frames with identical content — expected during steady-state monitoring with no dynamic cell changes. Confirms the RTOS tick-driven broadcast schedule is operating correctly.</div>
+            <div class="card-body mt-1">8 consecutive frames with identical content — expected during steady-state monitoring with no dynamic cell changes. Confirms RTOS tick-driven broadcast is operating correctly.</div>
           </div>
           <div class="card">
-            <h4>Hardware-Agnostic Firmware</h4>
-            <div class="card-body mt-1">The BMS firmware has zero knowledge of its Renode execution context. This output is identical to what the same binary will produce on physical silicon — validation results are fully production-representative.</div>
+            <h4>Hardware-Agnostic</h4>
+            <div class="card-body mt-1">The BMS firmware has zero knowledge of its Renode context. This output is identical to what the same binary will produce on physical silicon — results are fully production-representative.</div>
           </div>
           <div class="card">
-            <h4>Direct Pipeline Entry Point</h4>
-            <div class="card-body mt-1">These frames are received verbatim by the middleware bridge (Terminal 4), encoded, and forwarded to the VCU (Terminal 1), which then populates the state stream (Terminal 3) and the black-box log (Terminal 2).</div>
+            <h4>Pipeline Entry Point</h4>
+            <div class="card-body mt-1">These frames are received by the middleware bridge (T4), encoded, forwarded to the VCU (T1), which then populates the state stream (T3) and the black-box log (T2).</div>
           </div>
         </div>
       </div>
@@ -475,41 +555,30 @@
         <text x="72" y="50" font-family="'Rajdhani',sans-serif" font-size="11" fill="#00d4ff" font-weight="700" text-anchor="middle">BMS FIRMWARE</text>
         <text x="72" y="64" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">Renode USART1</text>
         <text x="72" y="78" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">T5 · ✓ Verified</text>
-
         <line x1="136" y1="59" x2="163" y2="59" stroke="rgba(0,212,255,0.6)" stroke-width="1.5" marker-end="url(#ea)"/>
         <text x="146" y="52" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">CAN raw</text>
-
         <rect x="165" y="25" width="125" height="68" rx="5" fill="#0d1321" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
         <text x="227" y="50" font-family="'Rajdhani',sans-serif" font-size="11" fill="#f59e0b" font-weight="700" text-anchor="middle">MIDDLEWARE</text>
         <text x="227" y="64" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">wormhole.py</text>
         <text x="227" y="78" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">T4 · ✓ Verified</text>
-
         <line x1="291" y1="59" x2="318" y2="59" stroke="rgba(245,158,11,0.6)" stroke-width="1.5" marker-end="url(#ea)"/>
         <text x="297" y="52" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">UDP inject</text>
-
         <rect x="320" y="25" width="135" height="68" rx="5" fill="#0d1321" stroke="rgba(0,212,255,0.5)" stroke-width="2" filter="url(#ef)"/>
         <text x="387" y="50" font-family="'Rajdhani',sans-serif" font-size="11" fill="#00d4ff" font-weight="700" text-anchor="middle">VCU DAEMON</text>
         <text x="387" y="64" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">evo_vcu_daemon</text>
         <text x="387" y="78" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">T1 · ✓ Verified</text>
-
         <line x1="456" y1="50" x2="483" y2="50" stroke="rgba(239,68,68,0.6)" stroke-width="1.5" marker-end="url(#ea)"/>
         <text x="459" y="43" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">fault write</text>
-
         <rect x="485" y="25" width="125" height="68" rx="5" fill="#0d1321" stroke="rgba(239,68,68,0.35)" stroke-width="1.5"/>
         <text x="547" y="50" font-family="'Rajdhani',sans-serif" font-size="11" fill="#ef4444" font-weight="700" text-anchor="middle">BLACK BOX</text>
         <text x="547" y="64" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">fault ledger</text>
         <text x="547" y="78" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">T2 · ✓ Verified</text>
-
-        <line x1="456" y1="70" x2="483" y2="70" stroke="rgba(34,197,94,0.5)" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ea)"/>
-
         <line x1="630" y1="59" x2="650" y2="59" stroke="rgba(34,197,94,0.5)" stroke-width="1.5" marker-end="url(#ea)"/>
         <text x="633" y="52" font-family="'IBM Plex Mono',monospace" font-size="7" fill="#607080">UDP pub</text>
-
         <rect x="652" y="25" width="120" height="68" rx="5" fill="#0d1321" stroke="rgba(34,197,94,0.35)" stroke-width="1.5"/>
         <text x="712" y="50" font-family="'Rajdhani',sans-serif" font-size="11" fill="#22c55e" font-weight="700" text-anchor="middle">STATE STREAM</text>
         <text x="712" y="64" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#607080" text-anchor="middle">UDP broadcast</text>
         <text x="712" y="78" font-family="'IBM Plex Mono',monospace" font-size="8" fill="#22c55e" text-anchor="middle">T3 · ✓ Verified</text>
-
         <text x="10" y="118" font-family="'IBM Plex Mono',monospace" font-size="8" fill="rgba(34,197,94,0.55)">All 5 terminals active simultaneously · Zero packet loss under nominal conditions · ~58 min session · 2 distinct fault codes exercised</text>
       </svg>
     </div>
@@ -521,8 +590,7 @@
   <div class="container" style="max-width:720px;">
     <div class="callout cyan">
       <h4 style="margin-bottom:0.65rem;">⊘ On Abstracted Values</h4>
-      <p>Fields shown in <em style="color:var(--text-dim); background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.18); border-radius:3px; padding:0 4px; font-size:0.88em;">[italicized brackets]</em> represent values intentionally withheld to protect proprietary implementation details — specifically: CAN arbitration IDs, 8-byte frame payloads, port assignments, and internal component identifiers.</p>
-      <p style="margin-top:0.65rem; margin-bottom:0;">All safety behaviors, state transitions, fault codes, timestamps, and powertrain telemetry values (voltages, currents, SOC, temperatures) are reproduced without modification. Motor controller references use the label <code>XESC</code> in place of the specific hardware vendor name.</p>
+      <p>Fields shown in <em style="color:var(--text-dim); background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.18); border-radius:3px; padding:0 4px; font-size:0.88em;">[italicized brackets]</em> represent values intentionally withheld to protect proprietary implementation details — specifically: CAN arbitration IDs, 8-byte frame payloads, port assignments, and internal component identifiers. All safety behaviors, state transitions, fault codes, timestamps, and powertrain telemetry values are reproduced without modification. Motor controller references use <code>XESC</code> in place of the specific hardware vendor name.</p>
     </div>
   </div>
 </section>
@@ -539,24 +607,5 @@
     </nav>
   </div>
 </footer>
-
-<script>
-function loadImg(input, slotId) {
-  const slot = document.getElementById(slotId);
-  const img  = document.getElementById('img-' + slotId);
-  if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    img.src = e.target.result;
-    img.style.display = 'block';
-    slot.querySelectorAll('.slot-icon,.slot-label,.slot-hint').forEach(el => el.style.display = 'none');
-    slot.style.padding   = '0.5rem';
-    slot.style.border    = '1px solid var(--border)';
-    slot.style.background = 'transparent';
-    slot.style.minHeight  = 'auto';
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-</script>
 </body>
 </html>

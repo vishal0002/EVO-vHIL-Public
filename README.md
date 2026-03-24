@@ -26,4 +26,4 @@ Implementation details, control logic, and system tuning are intentionally omitt
 
 ## Explore the Full Architecture
 
-👉 [View the white paper](./index.html)
+👉 [View the white paper](https://vishal0002.github.io/EVO-vHIL-Public/index.html)

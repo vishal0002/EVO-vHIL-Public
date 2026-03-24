@@ -10,6 +10,24 @@
   <script data-goatcounter="https://evo-vhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
         
 </head>
+<script>
+let startTime = Date.now();
+
+window.addEventListener("beforeunload", function () {
+  let timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+  // Only track meaningful sessions (>5 sec)
+  if (timeSpent > 5) {
+    navigator.sendBeacon(
+      "https://evo-vhil.goatcounter.com/count",
+      JSON.stringify({
+        path: location.pathname + "#time-" + timeSpent,
+        event: true
+      })
+    );
+  }
+});
+</script>
 <body>
 <div class="scanline"></div>
 
@@ -303,6 +321,26 @@ const observer = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1 });
 reveals.forEach(el => observer.observe(el));
+</script>
+<script>
+let scrollTracked = false;
+
+window.addEventListener("scroll", () => {
+  const scrollPosition = window.scrollY + window.innerHeight;
+  const pageHeight = document.documentElement.scrollHeight;
+
+  if (!scrollTracked && scrollPosition > pageHeight * 0.5) {
+    scrollTracked = true;
+
+    navigator.sendBeacon(
+      "https://evo-vhil.goatcounter.com/count",
+      JSON.stringify({
+        path: location.pathname + "#scroll-50",
+        event: true
+      })
+    );
+  }
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: "EVO vHIL: A Full-Stack Virtual Validation Framework for High-Voltage EV Powertrains"
+message: "If you use this project or architecture, please cite it as below."
+type: software
+
+authors:
+  - family-names: "Bagade"
+    given-names: "Vishal"
+    alias: "vishal0002"
+    
+
+repository-code: "https://github.com/vishal0002/EVO-vHIL-Public"
+url: "https://vishal0002.github.io/EVO-vHIL-Public/"
+
+abstract: >
+  EVO vHIL is a virtual hardware-in-the-loop framework designed to simulate and validate
+  high-voltage EV powertrain systems using production-intent firmware and software stacks.
+  It integrates a custom C/RTOS Battery Management System (BMS) managing a dual-pack topology
+  (84S HV + 4S LV), an Android Automotive OS VCU daemon, and a Linux user-space SPI driver
+  for ISO 15118 CCS fast charging. The framework utilizes Renode-based MCU simulation and
+  Python middleware for deterministic fault injection over virtual CAN networks, eliminating
+  the dependency on physical hardware test benches.
+
+keywords:
+  - virtual hardware-in-the-loop
+  - EV powertrain
+  - battery management system
+  - Renode
+  - embedded systems
+  - Android Automotive
+  - CAN
+  - fault injection
+  - ISO 15118
+  - software-defined vehicle
+
+license: MIT
+version: "1.3"
+date-released: 2026-03-25

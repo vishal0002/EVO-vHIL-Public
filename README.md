@@ -63,4 +63,4 @@ It does **not** include:
 
 ## Explore the Full Architecture
 
-👉 [View the full white paper](https://vishal0002.github.io/EVO-vHIL-Public/)
+👉 [View the full white paper](https://evovhil.com/)

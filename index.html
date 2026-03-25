@@ -2,36 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- JSON-LD (keep at top) -->
   <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "EVO vHIL",
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Linux, Android",
-  "author": {
-    "@type": "Person",
-    "name": "Vishal Bagade"
-  },
-  "description": "Virtual hardware-in-the-loop framework for EV powertrain validation using Renode and production firmware.",
-  "url": "https://vishal0002.github.io/EVO-vHIL-Public/"
-}
-</script>
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "EVO vHIL",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Linux, Android",
+    "author": {
+      "@type": "Person",
+      "name": "Vishal Bagade"
+    },
+    "description": "Virtual hardware-in-the-loop framework for EV powertrain validation using Renode and production firmware.",
+    "url": "https://vishal0002.github.io/EVO-vHIL-Public/"
+  }
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>EVO vHIL — Virtual Validation for High-Voltage EV Powertrains</title>
+
   <meta name="author" content="Vishal Bagade">
   <meta name="description" content="A full-stack virtual Hardware-in-the-Loop (vHIL) framework for validating high-voltage EV powertrains, Android Automotive VCUs, and ISO 15118 fast charging.">
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EVS54RD7KM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-EVS54RD7KM');
+</script>
+
   <meta name="google-site-verification" content="8OTdQsH8hmNBFH6MxRdVUnGSFUFtjsmQ5clHsHvqLK8" />
-  <link rel="stylesheet" href="style.css" />
-  <script data-goatcounter="https://evo-vhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
   <link rel="canonical" href="https://vishal0002.github.io/EVO-vHIL-Public/" />
+
+  <!-- Open Graph -->
   <meta property="og:title" content="EVO vHIL — Virtual HIL for EV Powertrain Validation" />
   <meta property="og:description" content="Full-stack virtual HIL platform for EV systems using production firmware, Renode simulation, and deterministic fault injection." />
   <meta property="og:url" content="https://vishal0002.github.io/EVO-vHIL-Public/" />
   <meta property="og:type" content="website" />
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="EVO vHIL — Virtual HIL for EV Powertrain Validation">
   <meta name="twitter:description" content="Full-stack EV validation using virtual HIL, Renode, and production firmware.">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- GoatCounter (keep last) -->
+  <script data-goatcounter="https://evo-vhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
 </head>
 <script>
 let startTime = Date.now();

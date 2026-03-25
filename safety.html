@@ -3,8 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Safety Model — EVO vHIL</title>
+  <meta name="author" content="Vishal Bagade">
+  <meta name="description" content="Safety model for EVO vHIL — fail-safe by default, integer-math plausibility checks, watchdog protection, atomic faulting, and rogue charger defense for EV powertrain validation.">
+
+  <link rel="canonical" href="https://evovhil.com/safety.html" />
+
+  <!-- Redirect old GitHub Pages URL to custom domain -->
+  <script>
+    if (location.hostname.includes("github.io")) {
+      location.replace("https://evovhil.com" + location.pathname + location.search + location.hash);
+    }
+  </script>
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Safety Model — EVO vHIL" />
+  <meta property="og:description" content="Fail-safe by default: watchdogs, plausibility checks, atomic faulting, and rogue charger defense for EVO vHIL." />
+  <meta property="og:url" content="https://evovhil.com/safety.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://evovhil.com/og.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Safety Model — EVO vHIL">
+  <meta name="twitter:description" content="Fail-safe by default: watchdogs, plausibility checks, atomic faulting, and rogue charger defense for EVO vHIL.">
+  <meta name="twitter:image" content="https://evovhil.com/og.png">
+
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="style.css" />
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVS54RD7KM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-EVS54RD7KM');
+  </script>
+
+  <!-- GoatCounter -->
+  <script data-goatcounter="https://evo-vhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+  <!-- Optional: page-specific schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Safety Model — EVO vHIL",
+    "author": {
+      "@type": "Person",
+      "name": "Vishal Bagade"
+    },
+    "url": "https://evovhil.com/safety.html",
+    "description": "Fail-safe model, watchdog protection, atomic faulting, and rogue charger defense for EVO vHIL."
+  }
+  </script>
 </head>
 <body>
 <div class="scanline"></div>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+  
 <head>
   <meta charset="UTF-8" />
 
@@ -26,7 +27,8 @@
 
   <meta name="author" content="Vishal Bagade">
   <meta name="description" content="A full-stack virtual Hardware-in-the-Loop (vHIL) framework for validating high-voltage EV powertrains, Android Automotive VCUs, and ISO 15118 fast charging.">
-
+<meta name="robots" content="index, follow">
+  <link rel="preload" href="style.css" as="style">
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVS54RD7KM"></script>
 <script>
@@ -54,14 +56,18 @@ function trackEvent(name, params = {}) {
   <link rel="canonical" href="https://evovhil.com/" />
   <script>
 if (location.hostname.includes("github.io")) {
+
   location.replace("https://evovhil.com" + location.pathname + location.search + location.hash);
+
 }
 </script>
   <!-- Open Graph -->
   <meta property="og:title" content="EVO vHIL — Virtual HIL for EV Powertrain Validation" />
   <meta property="og:description" content="Full-stack virtual HIL platform for EV systems using production firmware, Renode simulation, and deterministic fault injection." />
   <meta property="og:url" content="https://evovhil.com/" />
+
   <meta property="og:type" content="article" />
+
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -102,6 +108,7 @@ window.addEventListener("beforeunload", function () {
     <a href="/" class="nav-logo">
       <span class="dot"></span> EVO vHIL
     </a>
+
     <button class="nav-hamburger" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -113,6 +120,7 @@ window.addEventListener("beforeunload", function () {
       <a href="/proof.html">Proof</a>
       <a href="/fullpaper.html">White Paper</a>
       <a href="/about.html">About</a>
+
     </div>
   </div>
 </nav>

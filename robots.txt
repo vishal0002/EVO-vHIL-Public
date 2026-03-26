@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://vishal0002.github.io/EVO-vHIL-Public/sitemap.xml
+Sitemap: http://evovhil.com/sitemap.xml

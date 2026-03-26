@@ -60,8 +60,8 @@ if (location.hostname.includes("github.io")) {
   <!-- Open Graph -->
   <meta property="og:title" content="EVO vHIL — Virtual HIL for EV Powertrain Validation" />
   <meta property="og:description" content="Full-stack virtual HIL platform for EV systems using production firmware, Renode simulation, and deterministic fault injection." />
-  <meta property="og:url" content="https://evovhil.com/" />
-  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://evovhil.com" />
+  <meta property="og:type" content="website" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -147,8 +147,8 @@ window.addEventListener("beforeunload", function () {
       </div>
     </div>
     <div class="btn-group">
-      <a href="/architecture.html" class="btn btn-primary" onclick="trackEvent('cta_architecture')">Explore Architecture →</a>
-      <a href="/fullpaper.html" class="btn btn-outline" onclick="trackEvent('cta_whitepaper_view')">Read White Paper</a>
+      <a href="architecture.html" class="btn btn-primary" onclick="trackEvent('cta_architecture')">Explore Architecture →</a>
+      <a href="fullpaper.html" class="btn btn-outline" onclick="trackEvent('cta_whitepaper_view')">Read White Paper</a>
       <a href="https://raw.githubusercontent.com/vishal0002/EVO-vHIL-Public/main/docs/EVO_vHIL_Whitepaper_Public.pdf"
      class="btn btn-primary pulse"
      download 
@@ -325,25 +325,25 @@ window.addEventListener("beforeunload", function () {
       <h2 class="section-title">Explore the System</h2>
     </div>
     <div class="card-grid-2">
-      <a href="/architecture.html" class="card" style="text-decoration:none;">
+      <a href="architecture.html" class="card" style="text-decoration:none;">
         <span class="card-icon">🧠</span>
         <div class="card-title">System Architecture</div>
         <div class="card-body">Six-layer stack, dual-pack topology, SPI CCS charging subsystem, and middleware bridge design. Full data flow from BMS to EVSE.</div>
         <div class="mt-2" style="color:var(--cyan); font-family:var(--mono); font-size:0.8rem;">View Architecture →</div>
       </a>
-      <a href="/safety.html" class="card" style="text-decoration:none;">
+      <a href="safety.html" class="card" style="text-decoration:none;">
         <span class="card-icon">🛡️</span>
         <div class="card-title">Safety Model</div>
         <div class="card-body">ISO 26262-inspired fail-safe logic, integer-math plausibility firewall, atomic hardware faulting, rogue charger defense, and VCU deadman switch.</div>
         <div class="mt-2" style="color:var(--cyan); font-family:var(--mono); font-size:0.8rem;">Explore Safety →</div>
       </a>
-      <a href="/validation.html" class="card" style="text-decoration:none;">
+      <a href="validation.html" class="card" style="text-decoration:none;">
         <span class="card-icon">🧪</span>
         <div class="card-title">Fault Injection & Validation</div>
         <div class="card-body">Deterministic fault scenarios, CI boot orchestration, and six validated fault injection tests including thermal runaway and rogue charger overcurrent.</div>
         <div class="mt-2" style="color:var(--cyan); font-family:var(--mono); font-size:0.8rem;">See Validation →</div>
       </a>
-      <a href="/proof.html" class="card" style="text-decoration:none;">
+      <a href="proof.html" class="card" style="text-decoration:none;">
         <span class="card-icon">🔬</span>
         <div class="card-title">Proof of Execution</div>
         <div class="card-body">System execution traces, state transitions, integration test outcomes, and verified dual-pack LV resilience under simulated catastrophic HV failure.</div>
@@ -368,19 +368,6 @@ window.addEventListener("beforeunload", function () {
   </div>
 </section>
 
-
-<!-- ── UPCOMING WORK ── -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <div class="callout">
-      <h4>🔋 Upcoming Work</h4>
-      <p>
-        A deeper exploration of the EVO BMS architecture — including real-time fault handling,
-        dual-pack energy coordination, and safety-critical state transitions — will be published soon.
-      </p>
-    </div>
-  </div>
-</section>
 
 <!-- ── STANDARDS & TECHNOLOGIES ── -->
 <section class="section" aria-label="Standards and technologies referenced">
@@ -444,13 +431,14 @@ window.addEventListener("beforeunload", function () {
       <div class="footer-meta mt-1">Full-Stack Virtual Validation Framework · Revision 1.3</div>
     </div>
     <nav class="footer-nav">
-      <a href="/architecture.html">Architecture</a>
-      <a href="/safety.html">Safety</a>
-      <a href="/validation.html">Validation</a>
-      <a href="/proof.html">Proof</a>
-      <a href="/fullpaper.html">White Paper</a>
-      <a href="/about.html">About</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="safety.html">Safety</a>
+      <a href="validation.html">Validation</a>
+      <a href="proof.html">Proof</a>
+      <a href="fullpaper.html">White Paper</a>
+      <a href="about.html">About</a>
     </nav>
+    <a href="https://evovhil.com/" style="display:none;">EVO vHIL</a>
   </div>
 </footer>
 

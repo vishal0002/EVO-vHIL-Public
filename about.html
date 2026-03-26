@@ -103,9 +103,17 @@
 
         <div class="callout cyan mt-4">
           <h4 style="margin-bottom:0.5rem;">Contact</h4>
-          <p>Email: <a href="/cdn-cgi/l/email-protection#7006190318111c12111711141541424130171d11191c5e131f1d"><span class="__cf_email__" data-cfemail="32445b415a535e50535553565703000372555f535b5e1c515d5f">[email&#160;protected]</span></a></p>
+          <p>Email: <a id="email"></a></p>
 
-          <p>
+            <script>
+            const user = "vishalbagade";
+            const domain = "gmail.com";
+            const email = user + "@" + domain;
+
+            const link = document.getElementById("email");
+            link.href = "mailto:" + email;
+            link.textContent = email;
+            </script>
           LinkedIn: <a href="https://www.linkedin.com/in/vishal-bagade/" target="_blank">linkedin.com/in/vishal-bagade/</a><br>
           X: <a href="https://x.com/VishalBagade121" target="_blank">x.com/VishalBagade121</a><br>
           GitHub: <a href="https://github.com/vishal0002" target="_blank">github.com/vishal0002</a>

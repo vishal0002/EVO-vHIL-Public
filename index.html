@@ -36,6 +36,11 @@
 
   gtag('config', 'G-EVS54RD7KM');
 </script>
+  <script>
+function trackEvent(name, params = {}) {
+  gtag('event', name, params);
+}
+</script>
 <link rel="icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -139,11 +144,13 @@ window.addEventListener("beforeunload", function () {
       </div>
     </div>
     <div class="btn-group">
-      <a href="architecture.html" class="btn btn-primary">Explore Architecture →</a>
-      <a href="fullpaper.html" class="btn btn-outline">Read White Paper</a>
+      <a href="architecture.html" class="btn btn-primary" onclick="trackEvent('cta_architecture')">Explore Architecture →</a>
+      <a href="fullpaper.html" class="btn btn-outline" onclick="trackEvent('cta_whitepaper_view')">Read White Paper</a>
       <a href="https://raw.githubusercontent.com/vishal0002/EVO-vHIL-Public/main/docs/EVO_vHIL_Whitepaper_Public.pdf"
      class="btn btn-primary pulse"
-     download data-goatcounter-click="whitepaper-download">
+     download 
+     onclick="trackEvent('whitepaper_download')"
+     data-goatcounter-click="whitepaper-download">
      ⬇ Download Full Whitepaper
   </a>
     </div>
@@ -394,6 +401,8 @@ window.addEventListener("scroll", () => {
   if (!scrollTracked && scrollPosition > pageHeight * 0.5) {
     scrollTracked = true;
 
+    trackEvent("scroll_50");
+    
     navigator.sendBeacon(
       "https://evo-vhil.goatcounter.com/count",
       JSON.stringify({
@@ -403,6 +412,16 @@ window.addEventListener("scroll", () => {
     );
   }
 });
+</script>
+  <script>
+const path = location.pathname;
+
+// Page-level intent tracking
+if (path.includes("architecture")) trackEvent("view_architecture");
+if (path.includes("safety")) trackEvent("view_safety");
+if (path.includes("validation")) trackEvent("view_validation");
+if (path.includes("proof")) trackEvent("view_proof");
+if (path.includes("about")) trackEvent("view_about");
 </script>
 </body>
 </html>

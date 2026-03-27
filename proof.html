@@ -256,15 +256,17 @@
             <code>/vendor/bin/evo_vcu_daemon</code> · AAOS Vendor Partition · V2.0 ASIL-D
           </div>
         </div>
-        <span class="badge badge-amber">Screenshot Pending</span>
+        
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-pending">
-          <div style="font-size:1.4rem; opacity:0.25;">🖥</div>
-          <div class="pending-label">Screenshot — Coming Soon</div>
-          <div class="pending-hint">VCU daemon boot · fault triggers · HIL mode activation</div>
-        </div>
+        <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">VCU daemon boot · fault triggers</span>
+        <div class="terminal-status"><span class="live-dot"></span>HIL mode activation</div>
+      </div>
+      <img src="images/t1.png" alt="EVO vHIL VCU daemon boot and fault injection terminal output">
+      </div>
 
         <div class="callout cyan mt-3 mb-3">
           <p>The trace shows the daemon completing initialization, entering HIL simulation mode (widening the CAN watchdog timeout for virtual bridge latency), then triggering two fault codes in sequence — <code>CAN_TIMEOUT</code> before the BMS bridge is established, and <code>THERMAL_SHUTDOWN</code> once a live thermal fault is injected via the middleware.</p>
@@ -321,15 +323,16 @@
             Persistent append-only ledger · Every <code>SYS_KILL</code> written with full powertrain snapshot
           </div>
         </div>
-        <span class="badge badge-amber">Screenshot Pending</span>
-      </div>
+        
       <div class="terminal-section-body">
 
-        <div class="screenshot-pending">
-          <div style="font-size:1.4rem; opacity:0.25;">🖥</div>
-          <div class="pending-label">Screenshot — Coming Soon</div>
-          <div class="pending-hint">Black-box fault log — timestamped SYS_KILL events with powertrain snapshot</div>
-        </div>
+        <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">Black-box fault log — timestamped SYS_KILL events with powertrain snapshot</span>
+        <div class="terminal-status"><span class="live-dot"></span>Black-box</div>
+      </div>
+      <img src="images/t2.png" alt="EV BMS black box fault log with thermal shutdown event">
+      </div>
 
         <div class="callout amber mt-3 mb-3">
           <p>Six fault events across a ~58-minute session. The first four entries show zero-value telemetry — expected, as the BMS bridge was not yet connected. Entries at <strong>15:40</strong> and <strong>16:08</strong> are the key data points: they capture live BMS telemetry (298.9V, 25A, 85% SOC) at the exact moment of fault, confirming end-to-end CAN delivery was active.</p>
@@ -378,15 +381,17 @@
             <code>adb shell</code> → <code>nc -u -l -p <span class="t-mask">[PORT_B]</span></code> · UDP one-way broadcast from VCU daemon to host
           </div>
         </div>
-        <span class="badge badge-amber">Screenshot Pending</span>
+        
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-pending">
-          <div style="font-size:1.4rem; opacity:0.25;">🖥</div>
-          <div class="pending-label">Screenshot — Coming Soon</div>
-          <div class="pending-hint">adb shell netcat — live UDP state frames from VCU daemon</div>
-        </div>
+         <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">adb shell netcat — live UDP state frames from VCU daemon</span>
+        <div class="terminal-status"><span class="live-dot"></span>VCU daemon</div>
+      </div>
+      <img src="images/t3.png" alt="VCU UDP state stream showing fault recovery from thermal shutdown">
+      </div>
 
         <div class="callout cyan mt-3 mb-3">
           <p>Two consecutive <code>nc</code> sessions demonstrate non-permanent-latching fault recovery. Session 1 catches a live <code>THERMAL_SHUTDOWN</code> frame in-flight. Session 2, after fault clearance, shows <code>SYSTEM_OK</code> — the system returned to normal operation without a cold restart.</p>
@@ -427,7 +432,7 @@
             <code>wormhole.py</code> · Stream parser → CAN encoder → UDP injector into AAOS network stack
           </div>
         </div>
-        <span class="badge badge-cyan">No Screenshot</span>
+        
       </div>
       <div class="terminal-section-body">
         <div class="callout cyan mb-3">
@@ -473,15 +478,17 @@
             Simulated MCU USART1 · Raw CAN frame stream from BMS C/RTOS firmware · Hardware-agnostic
           </div>
         </div>
-        <span class="badge badge-amber">Screenshot Pending</span>
+       
       </div>
       <div class="terminal-section-body">
 
-        <div class="screenshot-pending">
-          <div style="font-size:1.4rem; opacity:0.25;">🖥</div>
-          <div class="pending-label">Screenshot — Coming Soon</div>
-          <div class="pending-hint">Renode USART1 — raw CAN frames from BMS C firmware on simulated MCU</div>
-        </div>
+        <div class="screenshot-frame-bar">
+        <div class="terminal-dots"><span class="red"></span><span class="amber"></span><span class="green"></span></div>
+        <span class="terminal-title">Renode USART1 — raw CAN frames from BMS C firmware on simulated MCU</span>
+        <div class="terminal-status"><span class="live-dot"></span>Renode USART1</div>
+      </div>
+      <img src="images/t4.png" alt="Renode USART CAN output from simulated BMS firmware">
+      </div>
 
         <div class="callout cyan mt-3 mb-3">
           <p>This is the raw output from the simulated MCU's USART1 peripheral inside Renode — the BMS C firmware emitting CAN frames exactly as it would over a physical serial-to-CAN interface on real silicon. The firmware is <strong>completely unaware it is running in simulation</strong>. The same frame format will appear on the physical CAN bus when this firmware is flashed to target silicon.</p>

@@ -1039,15 +1039,22 @@ function setMetric(key, val, cls) {
 
 function pushChart(v, a) {
   chartTick++;
-  if (chartTick % 5 !== 0) return; // 🟢 Limit render to 20Hz to prevent browser freezing
+  if (chartTick % 5 !== 0) return; // 20Hz rendering limit
 
-  // 🟢 SYNCHRONIZED SHIFT: Push and shift without destroying the array reference!
+  // 🟢 THE MISSING LINK: We MUST shift the empty labels so the X-Axis clock stays synced!
+  mainChart.data.labels.shift();
+  mainChart.data.labels.push('');
+  
   mainChart.data.datasets[0].data.shift();
   mainChart.data.datasets[0].data.push(v);
   mainChart.data.datasets[1].data.shift();
   mainChart.data.datasets[1].data.push(a);
-  mainChart.update('none'); // 'none' disables expensive animations
+  mainChart.update('none'); // Update without expensive animations
 
+  // 🟢 Do the exact same for the Mini Chart
+  miniChart.data.labels.shift();
+  miniChart.data.labels.push('');
+  
   miniChart.data.datasets[0].data.shift();
   miniChart.data.datasets[0].data.push(v);
   miniChart.data.datasets[1].data.shift();

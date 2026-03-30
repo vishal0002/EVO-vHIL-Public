@@ -318,6 +318,17 @@ function connectWS() {
   ws = new WebSocket(url);
   ws.onopen = () => { document.getElementById('wsStatus').textContent = '● LIVE'; document.getElementById('wsStatus').style.color = 'var(--green)'; logSys('Connection established.'); };
   ws.onmessage = (e) => updateTelemetry(JSON.parse(e.data));
+  ws.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      // 🟢 THE BLACKBOX RENDERER:
+      if (d.type === 'BLACKBOX') {
+          logLine('log-warn', `[BLACKBOX] ${d.payload}`);
+          return;
+      }
+      updateTelemetry(d);
+    } catch(err) { }
+  };
   ws.onclose = () => { document.getElementById('overlay').style.display = 'flex'; logErr('Connection lost.'); };
 }
 
@@ -345,17 +356,20 @@ function updateTelemetry(d) {
   if(Math.random() < 0.05) logRx(`V:${d.volts} A:${d.amps} T:${d.temp} FLT:${d.fault}`);
 }
 
-let throttleTimer = null; // 🟢 NEW: Memory variable to stop spam
+let throttleTimer = null; 
 
-function onThrottle(val) { 
-  document.getElementById('throttleDisplay').textContent = val; 
-  
-  // 🟢 DEBOUNCER: Prevent Node.js from freezing under a flood of commands!
+function onThrottle(val) {
+  document.getElementById('throttleDisplay').textContent = val;
+  // This updates the slider track visually
+  document.getElementById('throttleSlider').style.setProperty('--pct', val+'%');
+
+  // 🟢 DEBOUNCER: Prevent Linux Server from freezing!
   if(throttleTimer) clearTimeout(throttleTimer);
   throttleTimer = setTimeout(() => {
       sendCommand(`THROTTLE:${val}`);
-  }, 40); // Only send if the slider rests for 40 milliseconds
+  }, 40); 
 }
+  
 function onToggle(key) {
   const isIg = key === 'ignition';
   if(isIg) ignitionOn = !ignitionOn; else kickstandUp = !kickstandUp;

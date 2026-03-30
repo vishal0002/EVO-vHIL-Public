@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EVO vHIL — Live Simulation Dashboard</title>
+<meta name="description" content="Interact with the EVO vHIL virtual powertrain simulation in real-time. Control throttle, drive modes, and inject faults into a live ASIL-D safety daemon.">
+<link rel="canonical" href="https://evovhil.com/dashboard.html"/>
+<link rel="icon" href="/favicon.ico"/>
+<meta property="og:title" content="EVO vHIL — Live Dashboard"/>
+<meta property="og:description" content="Real-time virtual motorcycle powertrain — throttle control, fault injection, live telemetry."/>
+<meta property="og:url" content="https://evovhil.com/dashboard.html"/>
+<meta property="og:type" content="website"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ROOT — identical tokens to site style.css
+═══════════════════════════════════════════════════════════ */
+:root {
+  --bg:         #080c14;
+  --bg-card:    #0d1321;
+  --bg-deep:    #050810;
+  --border:     rgba(0,212,255,0.15);
+  --border-hi:  rgba(0,212,255,0.45);
+  --cyan:       #00d4ff;
+  --cyan-dim:   rgba(0,212,255,0.08);
+  --cyan-mid:   rgba(0,212,255,0.18);
+  --amber:      #f59e0b;
+  --amber-dim:  rgba(245,158,11,0.10);
+  --red:        #ef4444;
+  --red-dim:    rgba(239,68,68,0.12);
+  --green:      #22c55e;
+  --green-dim:  rgba(34,197,94,0.10);
+  --text:       #c8d6e5;
+  --text-dim:   #607080;
+  --text-hi:    #eef4fb;
+  --mono:       'IBM Plex Mono', monospace;
+  --head:       'Rajdhani', sans-serif;
+  --glow-c:     0 0 18px rgba(0,212,255,0.4);
+  --glow-r:     0 0 18px rgba(239,68,68,0.5);
+  --glow-g:     0 0 14px rgba(34,197,94,0.4);
+  --r:          5px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
+
+/* Grid overlay */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.022) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* Scan line */
+@keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+body::after {
+  content:'';
+  position:fixed;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(180deg,transparent,rgba(0,212,255,0.04),transparent);
+  animation:scan 9s linear infinite;
+  pointer-events:none;z-index:1;
+}
+
+/* ═══ TOP BAR ══════════════════════════════════════════════ */
+#topbar {
+  position:relative;z-index:10;
+  display:flex;align-items:center;gap:0;
+  background:rgba(8,12,20,0.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  height:48px;
+  flex-shrink:0;
+  padding:0;
+}
+
+.tb-logo {
+  display:flex;align-items:center;gap:8px;
+  padding:0 18px;
+  border-right:1px solid var(--border);
+  height:100%;
+  font-family:var(--head);font-size:1.05rem;font-weight:700;
+  color:var(--cyan);letter-spacing:0.1em;white-space:nowrap;
+  text-decoration:none;
+}
+.tb-logo-dot{width:7px;height:7px;background:var(--cyan);border-radius:50%;box-shadow:var(--glow-c);flex-shrink:0;}
+
+/* Status banner */
+#statusBanner {
+  flex:1;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:0 1rem;
+  font-family:var(--head);font-size:0.88rem;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:color 0.4s;
+}
+#statusBanner.driving  {color:var(--green);}
+#statusBanner.spectate {color:var(--amber);}
+#statusBanner.waiting  {color:var(--text-dim);}
+#statusBanner.inhibit  {color:var(--red);}
+
+.status-dot {
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.6)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+@keyframes pulse-a{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.6)}50%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
+@keyframes pulse-r{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.7)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+.dot-green {background:var(--green);animation:pulse-g 1.8s ease-in-out infinite;}
+.dot-amber {background:var(--amber);animation:pulse-a 2.2s ease-in-out infinite;}
+.dot-red   {background:var(--red);  animation:pulse-r 1.2s ease-in-out infinite;}
+.dot-dim   {background:var(--text-dim);}
+
+/* Session timer */
+#sessionTimer {
+  display:flex;align-items:center;gap:8px;
+  padding:0 18px;
+  border-left:1px solid var(--border);
+  height:100%;
+  font-family:var(--head);font-size:1.1rem;font-weight:700;
+  color:var(--text-hi);letter-spacing:0.06em;white-space:nowrap;
+}
+#sessionTimer.warn {color:var(--amber);}
+#sessionTimer.crit {color:var(--red);animation:pulse-r 1s ease-in-out infinite;}
+.timer-icon{font-size:0.85rem;}
+
+/* Nav back link */
+.tb-back {
+  display:flex;align-items:center;gap:6px;
+  padding:0 16px;height:100%;
+  border-left:1px solid var(--border);
+  color:var(--text-dim);font-size:0.72rem;letter-spacing:0.1em;
+  text-transform:uppercase;text-decoration:none;
+  transition:color 0.2s;white-space:nowrap;
+}
+.tb-back:hover{color:var(--cyan);}
+
+/* WS indicator */
+#wsIndicator {
+  display:flex;align-items:center;gap:6px;
+  padding:0 16px;height:100%;
+  border-left:1px solid var(--border);
+  font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);
+  white-space:nowrap;
+}
+
+/* ═══ MAIN GRID ════════════════════════════════════════════ */
+#mainGrid {
+  flex:1;
+  display:grid;
+  grid-template-columns:320px 1fr 280px;
+  grid-template-rows:1fr 180px;
+  gap:1px;
+  background:var(--border);
+  overflow:hidden;
+  position:relative;z-index:2;
+  min-height:0;
+}
+
+.panel {
+  background:var(--bg);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  min-height:0;
+}
+
+.panel-header {
+  display:flex;align-items:center;gap:8px;
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg-card);
+  flex-shrink:0;
+}
+.panel-title {
+  font-family:var(--head);font-size:0.78rem;font-weight:600;
+  color:var(--text-dim);letter-spacing:0.14em;text-transform:uppercase;
+}
+.panel-title-accent {color:var(--cyan);}
+.panel-body{padding:12px 14px;flex:1;overflow-y:auto;overflow-x:hidden;min-height:0;}
+.panel-body::-webkit-scrollbar{width:3px;}
+.panel-body::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
+
+/* ═══ LEFT PANEL — TELEMETRY ═══════════════════════════════ */
+#panelTelemetry { grid-column:1; grid-row:1; }
+
+/* Metric tiles */
+.metrics-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:12px;
+}
+.metric {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:10px 12px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.3s;
+}
+.metric::before {
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.metric.updated {border-color:var(--border-hi);}
+.metric.updated::before{opacity:1;}
+.metric-label {
+  font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:4px;
+}
+.metric-val {
+  font-family:var(--head);font-size:1.65rem;font-weight:700;
+  color:var(--text-hi);line-height:1;
+  transition:color 0.3s;
+}
+.metric-unit {
+  font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);
+  margin-top:2px;
+}
+.metric.warn .metric-val{color:var(--amber);}
+.metric.crit .metric-val{color:var(--red);}
+
+/* BMS state badge */
+#bmsStateWrap{margin-bottom:10px;}
+#bmsStateBadge {
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--head);font-size:0.82rem;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:6px 12px;border-radius:var(--r);
+  border:1px solid var(--border);
+  background:var(--bg-card);
+  transition:all 0.3s;
+}
+
+/* Chart area */
+.chart-wrap{
+  background:var(--bg-deep);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:10px 10px 6px;
+  height:160px;
+  position:relative;
+}
+.chart-label{
+  font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:6px;
+}
+
+/* ═══ CENTER PANEL — CHART (row 1, col 2) + TERMINAL (row 2) ═ */
+#panelChart { grid-column:2; grid-row:1; }
+#panelTerminal { grid-column:1/3; grid-row:2; }
+
+.chart-full{flex:1;min-height:0;padding:12px 14px;display:flex;flex-direction:column;}
+.chart-full canvas{flex:1;min-height:0;}
+
+/* Terminal */
+#terminal {
+  flex:1;
+  background:var(--bg-deep);
+  font-family:var(--mono);font-size:0.72rem;
+  padding:10px 14px;
+  overflow-y:auto;
+  line-height:1.75;
+  min-height:0;
+}
+#terminal::-webkit-scrollbar{width:3px;}
+#terminal::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.25);border-radius:2px;}
+.log-ts   {color:var(--text-dim);}
+.log-tx   {color:var(--cyan);}
+.log-rx   {color:var(--green);}
+.log-warn {color:var(--amber);}
+.log-err  {color:var(--red);}
+.log-sys  {color:#8888aa;}
+
+/* ═══ RIGHT PANEL — CONTROLS ═══════════════════════════════ */
+#panelControls { grid-column:3; grid-row:1/3; overflow-y:auto; }
+#panelControls::-webkit-scrollbar{width:3px;}
+#panelControls::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
+
+/* Section divider inside right panel */
+.ctrl-section {
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+}
+.ctrl-section:last-child{border-bottom:none;}
+.ctrl-title {
+  font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:10px;
+}
+
+/* Throttle */
+.throttle-display {
+  display:flex;align-items:baseline;gap:6px;
+  margin-bottom:10px;
+}
+.throttle-val{
+  font-family:var(--head);font-size:2.4rem;font-weight:700;
+  color:var(--cyan);line-height:1;
+}
+.throttle-pct{font-size:0.85rem;color:var(--text-dim);}
+
+#throttleSlider {
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:6px;
+  background:linear-gradient(90deg, var(--cyan) var(--pct,0%), var(--bg-card) var(--pct,0%));
+  border-radius:3px;
+  outline:none;cursor:pointer;
+  transition:box-shadow 0.2s;
+}
+#throttleSlider::-webkit-slider-thumb {
+  -webkit-appearance:none;
+  width:16px;height:16px;
+  background:var(--text-hi);
+  border-radius:50%;
+  border:2px solid var(--cyan);
+  box-shadow:0 0 8px rgba(0,212,255,0.5);
+  cursor:pointer;
+}
+#throttleSlider:hover{box-shadow:0 0 12px rgba(0,212,255,0.3);}
+
+/* Toggle buttons */
+.toggle-row {
+  display:flex;gap:8px;margin-bottom:0;
+}
+.toggle-btn {
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 6px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  cursor:pointer;
+  transition:all 0.2s;
+  color:var(--text-dim);
+  font-family:var(--mono);
+}
+.toggle-btn:hover{border-color:var(--border-hi);color:var(--text);}
+.toggle-btn.on {
+  border-color:var(--green);
+  background:var(--green-dim);
+  color:var(--green);
+  box-shadow:var(--glow-g);
+}
+.toggle-btn.on:hover{border-color:var(--green);filter:brightness(1.1);}
+.tb-icon{font-size:1.1rem;}
+.tb-label{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;}
+.tb-state{font-family:var(--head);font-size:0.78rem;font-weight:600;}
+
+/* Drive modes */
+.drive-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+}
+.drive-btn {
+  padding:9px 4px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  cursor:pointer;
+  text-align:center;
+  font-family:var(--head);font-size:0.82rem;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--text-dim);
+  transition:all 0.2s;
+}
+.drive-btn:hover{border-color:var(--border-hi);color:var(--text-hi);}
+.drive-btn.active {
+  background:var(--cyan-dim);
+  border-color:var(--cyan);
+  color:var(--cyan);
+  box-shadow:var(--glow-c);
+}
+.drive-btn[data-mode="3"].active {
+  background:rgba(245,158,11,0.1);
+  border-color:var(--amber);
+  color:var(--amber);
+  box-shadow:var(--glow-a,0 0 14px rgba(245,158,11,0.4));
+}
+
+/* E-STOP */
+#estopBtn {
+  width:100%;
+  padding:16px;
+  background:rgba(239,68,68,0.12);
+  border:2px solid var(--red);
+  border-radius:var(--r);
+  cursor:pointer;
+  font-family:var(--head);font-size:1rem;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--red);
+  box-shadow:var(--glow-r);
+  transition:all 0.15s;
+  position:relative;overflow:hidden;
+}
+#estopBtn::before {
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(circle at center, rgba(239,68,68,0.25) 0%, transparent 70%);
+  opacity:0;transition:opacity 0.15s;
+}
+#estopBtn:hover{background:rgba(239,68,68,0.22);transform:scale(1.01);}
+#estopBtn:hover::before{opacity:1;}
+#estopBtn:active{transform:scale(0.98);box-shadow:0 0 30px rgba(239,68,68,0.7);}
+
+/* Fault injector */
+.fault-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+}
+.fault-btn {
+  padding:9px 6px;
+  background:var(--red-dim);
+  border:1px solid rgba(239,68,68,0.25);
+  border-radius:var(--r);
+  cursor:pointer;
+  font-family:var(--mono);font-size:0.66rem;
+  letter-spacing:0.04em;
+  color:rgba(239,68,68,0.7);
+  transition:all 0.18s;
+  text-align:center;line-height:1.35;
+}
+.fault-btn:hover {
+  background:rgba(239,68,68,0.18);
+  border-color:var(--red);
+  color:var(--red);
+  box-shadow:0 0 8px rgba(239,68,68,0.3);
+}
+.fault-btn:active{transform:scale(0.97);}
+
+/* ═══ CONNECTION OVERLAY ════════════════════════════════════ */
+#overlay {
+  position:fixed;inset:0;z-index:100;
+  background:rgba(5,8,16,0.92);
+  backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:1.5rem;
+}
+.overlay-card {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:2.5rem 2.8rem;
+  text-align:center;
+  max-width:460px;width:90%;
+}
+.overlay-title{
+  font-family:var(--head);font-size:1.8rem;font-weight:700;
+  color:var(--text-hi);letter-spacing:0.05em;margin-bottom:0.5rem;
+}
+.overlay-sub{
+  font-size:0.8rem;color:var(--text-dim);line-height:1.7;margin-bottom:1.5rem;
+}
+.overlay-input-wrap{
+  display:flex;gap:8px;margin-bottom:1rem;
+}
+#wsUrlInput {
+  flex:1;
+  background:var(--bg-deep);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:9px 12px;
+  font-family:var(--mono);font-size:0.78rem;
+  color:var(--text-hi);
+  outline:none;
+  transition:border-color 0.2s;
+}
+#wsUrlInput:focus{border-color:var(--cyan);}
+#wsUrlInput::placeholder{color:var(--text-dim);}
+.overlay-connect-btn {
+  padding:9px 18px;
+  background:var(--cyan);
+  border:none;border-radius:var(--r);
+  font-family:var(--head);font-size:0.88rem;font-weight:700;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:#050810;
+  cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;
+  box-shadow:var(--glow-c);
+}
+.overlay-connect-btn:hover{background:#20e5ff;transform:translateY(-1px);}
+
+.overlay-note{
+  font-size:0.68rem;color:var(--text-dim);line-height:1.7;
+  margin-top:1rem;padding-top:1rem;
+  border-top:1px solid var(--border);
+}
+.overlay-note strong{color:var(--amber);}
+
+/* Connecting state */
+#connectingState{display:none;text-align:center;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{
+  width:40px;height:40px;
+  border:2px solid var(--border);
+  border-top-color:var(--cyan);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  margin:0 auto 1rem;
+}
+.conn-text{font-family:var(--head);font-size:1rem;color:var(--text);letter-spacing:0.06em;}
+
+/* Session expired */
+#expiredState{display:none;text-align:center;}
+.expired-icon{font-size:2.5rem;margin-bottom:1rem;}
+.expired-title{font-family:var(--head);font-size:1.3rem;color:var(--text-hi);margin-bottom:0.5rem;}
+.expired-sub{font-size:0.78rem;color:var(--text-dim);line-height:1.7;}
+
+/* ═══ TOOLTIP on CONTROL LOCK ═══════════════════════════════ */
+body.spectate-mode .ctrl-section.lockable {
+  opacity:0.45;pointer-events:none;
+}
+body.spectate-mode .ctrl-section.lockable::after {
+  content:'SPECTATE MODE — READ ONLY';
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;
+  color:var(--text-dim);
+  pointer-events:none;
+}
+body.spectate-mode .ctrl-section.lockable{position:relative;}
+
+/* ═══ RESPONSIVE — TABLET ═══════════════════════════════════ */
+@media (max-width: 900px) {
+  html,body{overflow:auto;}
+  #mainGrid{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto auto auto;
+    height:auto;
+  }
+  #panelTelemetry{grid-column:1;grid-row:1;}
+  #panelChart{grid-column:1;grid-row:2;}
+  #panelControls{grid-column:1;grid-row:3;max-height:none;}
+  #panelTerminal{grid-column:1;grid-row:4;height:200px;}
+  body{overflow:auto;}
+  .metrics-grid{grid-template-columns:repeat(3,1fr);}
+  .chart-full{height:220px;}
+}
+@media (max-width:520px) {
+  .metrics-grid{grid-template-columns:1fr 1fr;}
+  .tb-back span{display:none;}
+  #wsIndicator span:not(.ws-label){display:none;}
+}
+
+/* ═══ FLICKER ANIMATION (value update flash) ════════════════ */
+@keyframes flicker{0%,100%{opacity:1}40%{opacity:0.6}70%{opacity:0.9}}
+.flash{animation:flicker 0.25s ease-out;}
+
+/* ═══ INHIBIT MODE ══════════════════════════════════════════ */
+body.inhibit-mode #topbar { border-bottom-color: rgba(239,68,68,0.5); }
+body.inhibit-mode body::before { background-image: linear-gradient(rgba(239,68,68,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(239,68,68,0.015) 1px,transparent 1px); background-size:40px 40px; }
+
+/* Subtle corner watermark */
+.wm {
+  position:fixed;bottom:10px;right:12px;
+  font-family:var(--mono);font-size:0.62rem;
+  color:rgba(0,212,255,0.15);
+  letter-spacing:0.1em;pointer-events:none;z-index:1;
+}
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="overlay-card" id="connectCard">
+    <div class="overlay-title">EVO vHIL</div>
+    <p class="overlay-sub">
+      Connect to a live EVO Safety Daemon to control the virtual powertrain in real-time.
+    </p>
+    <div class="overlay-input-wrap">
+      <input type="text" id="wsUrlInput" placeholder="ws://your-server:8080" spellcheck="false" autocomplete="off"/>
+      <button class="overlay-connect-btn" onclick="connectWS()">Connect</button>
+    </div>
+    <div class="overlay-note">
+      <strong>Session limit: 15 minutes.</strong> Live mode requires a running EVO VCU Daemon instance on your Cloud Engine.
+    </div>
+  </div>
+  <div class="overlay-card" id="connectingCard" style="display:none;">
+    <div id="connectingState" style="display:block;">
+      <div class="spinner"></div>
+      <div class="conn-text">Establishing secure link…</div>
+      <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.5rem;" id="connTarget"></div>
+    </div>
+  </div>
+  <div class="overlay-card" id="expiredCard" style="display:none;">
+    <div id="expiredState" style="display:block;">
+      <div class="expired-icon">⏱</div>
+      <div class="expired-title">Session Expired</div>
+      <div class="expired-sub">Your 15-minute session has ended.<br>The daemon has been safely disconnected.<br><br>
+        <a href="/dashboard.html" style="color:var(--cyan);">Start a new session →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="topbar">
+  <a href="/" class="tb-logo"><span class="tb-logo-dot"></span>EVO vHIL</a>
+  <div id="statusBanner" class="waiting">
+    <span class="status-dot dot-dim" id="statusDot"></span>
+    <span id="statusText">CONNECTING…</span>
+    <span id="queuePos" style="color:var(--text-dim);font-size:0.75rem;"></span>
+  </div>
+  <div id="sessionTimer" class=""><span class="timer-icon">⏱</span><span id="timerDisplay">15:00</span></div>
+  <div id="wsIndicator"><span class="ws-label" style="color:var(--text-dim);">WS</span> <span id="wsStatus" style="color:var(--text-dim);">○ OFFLINE</span></div>
+  <a href="/" class="tb-back"><span>← BACK TO DOCS</span></a>
+</div>
+
+<div id="mainGrid">
+
+  <div class="panel" id="panelTelemetry">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-accent">//</span> LIVE TELEMETRY</div>
+    </div>
+    <div class="panel-body">
+      <div id="bmsStateWrap">
+        <span id="bmsStateBadge"><span id="bmsStateDot" class="status-dot dot-dim"></span><span id="bmsStateText">BMS STATE: UNKNOWN</span></span>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric" id="m-volts">
+          <div class="metric-label">Pack Voltage</div>
+          <div class="metric-val" id="v-volts">—</div>
+          <div class="metric-unit">VOLTS</div>
+        </div>
+        <div class="metric" id="m-amps">
+          <div class="metric-label">Pack Current</div>
+          <div class="metric-val" id="v-amps">—</div>
+          <div class="metric-unit">AMPS</div>
+        </div>
+        <div class="metric" id="m-soc">
+          <div class="metric-label">State of Charge</div>
+          <div class="metric-val" id="v-soc">—</div>
+          <div class="metric-unit">PERCENT</div>
+        </div>
+        <div class="metric" id="m-temp">
+          <div class="metric-label">Max Cell Temp</div>
+          <div class="metric-val" id="v-temp">—</div>
+          <div class="metric-unit">°C</div>
+        </div>
+        <div class="metric" id="m-rpm">
+          <div class="metric-label">Motor RPM</div>
+          <div class="metric-val" id="v-rpm">—</div>
+          <div class="metric-unit">RPM</div>
+        </div>
+        <div class="metric" id="m-fault">
+          <div class="metric-label">Fault Code</div>
+          <div class="metric-val" id="v-fault" style="font-size:1rem;">—</div>
+          <div class="metric-unit">ACTIVE FAULT</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-label">Voltage · Current · 30s rolling</div>
+        <canvas id="miniChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelChart">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-accent">//</span> PACK TELEMETRY — SCROLLING TRACE</div>
+    </div>
+    <div class="chart-full">
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
+
+  <div class="panel" id="panelControls">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-accent">//</span> COMMAND UPLINK</div>
+    </div>
+
+    <div class="ctrl-section lockable">
+      <div class="ctrl-title">Throttle Demand</div>
+      <div class="throttle-display">
+        <span class="throttle-val" id="throttleDisplay">0</span>
+        <span class="throttle-pct">%</span>
+      </div>
+      <input type="range" id="throttleSlider" min="0" max="100" value="0" style="--pct:0%"
+        oninput="onThrottle(this.value)"/>
+    </div>
+
+    <div class="ctrl-section lockable">
+      <div class="ctrl-title">System Toggles</div>
+      <div class="toggle-row">
+        <div class="toggle-btn" id="togIgnition" onclick="onToggle('ignition')">
+          <span class="tb-icon">🔑</span>
+          <span class="tb-label">Ignition</span>
+          <span class="tb-state" id="stIgnition">OFF</span>
+        </div>
+        <div class="toggle-btn" id="togKickstand" onclick="onToggle('kickstand')">
+          <span class="tb-icon">🏍</span>
+          <span class="tb-label">Kickstand</span>
+          <span class="tb-state" id="stKickstand">DOWN</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl-section lockable">
+      <div class="ctrl-title">Drive Mode</div>
+      <div class="drive-grid">
+        <button class="drive-btn active" data-mode="0" onclick="onDriveMode(0,this)">ECO</button>
+        <button class="drive-btn" data-mode="1" onclick="onDriveMode(1,this)">CITY</button>
+        <button class="drive-btn" data-mode="2" onclick="onDriveMode(2,this)">HI-WAY</button>
+        <button class="drive-btn" data-mode="3" onclick="onDriveMode(3,this)">TURBOJET</button>
+      </div>
+    </div>
+
+    <div class="ctrl-section lockable">
+      <button id="estopBtn" onclick="onEstop()">⬛ EMERGENCY STOP</button>
+    </div>
+
+    <div class="ctrl-section">
+      <div class="ctrl-title" style="color:rgba(239,68,68,0.6);">⚠ Fault Injector</div>
+      <div class="fault-grid">
+        <button class="fault-btn" onclick="onFault(8,'THERMAL_RUNAWAY')">Thermal<br>Runaway</button>
+        <button class="fault-btn" onclick="onFault(4,'CONTACTOR_WELD')">Contactor<br>Weld</button>
+        <button class="fault-btn" onclick="onFault(16,'BMS_COMMS_LOSS')">BMS Comms<br>Loss</button>
+        <button class="fault-btn" onclick="onFault(12,'PRECHARGE_FAIL')">Precharge<br>Fail</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelTerminal">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-accent">//</span> SYSTEM TERMINAL</div>
+      <button onclick="clearTerminal()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:0.65rem;padding:2px 8px;border-radius:3px;cursor:pointer;letter-spacing:0.08em;">CLEAR</button>
+    </div>
+    <div id="terminal"></div>
+  </div>
+
+</div>
+
+<div class="wm">EVO vHIL · Rev 1.4</div>
+
+<script>
+'use strict';
+
+// ── Config ──────────────────────────────────────────────────
+const SESSION_DURATION = 15 * 60; // seconds
+const MAX_CHART_POINTS = 120;     // ~12s at 10Hz
+const CHART_FULL_POINTS = 300;    // ~30s at 10Hz
+
+// ── BMS State map ────────────────────────────────────────────
+const BMS_STATES = {
+  0:'INIT',1:'STANDBY',2:'PRECHARGE',3:'DRIVE',
+  4:'DRIVE',5:'FAULT',6:'CHARGE',7:'CHARGE'
+};
+const FAULT_CODES = {
+  0:'SYSTEM_OK',4:'CONTACTOR_WELD',8:'THERMAL_SHUTDOWN',
+  12:'PRECHARGE_FAIL',16:'BMS_COMMS_LOSS',255:'SYS_KILL'
+};
+
+// ── State ────────────────────────────────────────────────────
+let ws = null;
+let sessionActive = false;
+let sessionTimer = SESSION_DURATION;
+let timerInterval = null;
+let lastData = {};
+let ignitionOn = false;
+let kickstandUp = false;
+let currentMode = 0;
+let throttleVal = 0;
+
+// ── Charts ────────────────────────────────────────────────────
+const CHART_OPTS_BASE = {
+  animation:false,
+  responsive:true,
+  maintainAspectRatio:false,
+  interaction:{mode:'nearest',intersect:false},
+  plugins:{legend:{display:false},tooltip:{enabled:false}},
+  scales:{
+    x:{display:false,grid:{display:false}},
+    y:{
+      grid:{color:'rgba(0,212,255,0.06)',lineWidth:1},
+      ticks:{color:'#607080',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
+      border:{color:'rgba(0,212,255,0.12)'}
+    }
+  }
+};
+
+let mainChart, miniChart;
+
+function initCharts() {
+  // Main scrolling chart
+  const mctx = document.getElementById('mainChart').getContext('2d');
+  mainChart = new Chart(mctx, {
+    type:'line',
+    data:{
+      labels: Array(CHART_FULL_POINTS).fill(''),
+      datasets:[
+        {
+          label:'Voltage',
+          data: Array(CHART_FULL_POINTS).fill(null),
+          borderColor:'rgba(0,212,255,0.85)',
+          backgroundColor:'rgba(0,212,255,0.04)',
+          borderWidth:1.5,
+          fill:true,
+          tension:0.35,
+          pointRadius:0,
+          yAxisID:'yV'
+        },
+        {
+          label:'Current',
+          data: Array(CHART_FULL_POINTS).fill(null),
+          borderColor:'rgba(245,158,11,0.85)',
+          backgroundColor:'rgba(245,158,11,0.03)',
+          borderWidth:1.5,
+          fill:false,
+          tension:0.35,
+          pointRadius:0,
+          yAxisID:'yA'
+        }
+      ]
+    },
+    options:{
+      ...CHART_OPTS_BASE,
+      plugins:{
+        legend:{
+          display:true,
+          labels:{
+            color:'#607080',
+            font:{family:"'IBM Plex Mono'",size:10},
+            boxWidth:20,padding:20,
+            usePointStyle:true,pointStyle:'line'
+          }
+        },
+        tooltip:{enabled:false}
+      },
+      scales:{
+        x:{display:false,grid:{display:false}},
+        yV:{
+          position:'left',
+          grid:{color:'rgba(0,212,255,0.05)',lineWidth:1},
+          ticks:{color:'rgba(0,212,255,0.6)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
+          border:{color:'rgba(0,212,255,0.15)'}
+        },
+        yA:{
+          position:'right',
+          grid:{drawOnChartArea:false},
+          ticks:{color:'rgba(245,158,11,0.6)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
+          border:{color:'rgba(245,158,11,0.15)'}
+        }
+      }
+    }
+  });
+
+  // Mini chart (left panel)
+  const sctx = document.getElementById('miniChart').getContext('2d');
+  miniChart = new Chart(sctx, {
+    type:'line',
+    data:{
+      labels: Array(MAX_CHART_POINTS).fill(''),
+      datasets:[
+        {
+          data: Array(MAX_CHART_POINTS).fill(null),
+          borderColor:'rgba(0,212,255,0.7)',
+          borderWidth:1.2,fill:false,tension:0.35,pointRadius:0
+        },
+        {
+          data: Array(MAX_CHART_POINTS).fill(null),
+          borderColor:'rgba(245,158,11,0.7)',
+          borderWidth:1.2,fill:false,tension:0.35,pointRadius:0,yAxisID:'ya'
+        }
+      ]
+    },
+    options:{
+      ...CHART_OPTS_BASE,
+      scales:{
+        x:{display:false},
+        y:{...CHART_OPTS_BASE.scales.y,ticks:{...CHART_OPTS_BASE.scales.y.ticks,maxTicksLimit:3}},
+        ya:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(245,158,11,0.5)',font:{family:"'IBM Plex Mono'",size:8},maxTicksLimit:3},border:{display:false}}
+      }
+    }
+  });
+}
+
+// ── Terminal ─────────────────────────────────────────────────
+function logLine(cls, msg) {
+  const el = document.getElementById('terminal');
+  const now = new Date();
+  const ts = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}.${now.getMilliseconds().toString().padStart(3,'0')}`;
+  const div = document.createElement('div');
+  div.innerHTML = `<span class="log-ts">[${ts}]</span> <span class="${cls}">${msg}</span>`;
+  el.appendChild(div);
+  // Keep only last 200 lines
+  while(el.children.length > 200) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+}
+function logTx(msg)   { logLine('log-tx',   '↑ TX  ' + msg); }
+function logRx(msg)   { logLine('log-rx',   '↓ RX  ' + msg); }
+function logWarn(msg) { logLine('log-warn', '⚠     ' + msg); }
+function logErr(msg)  { logLine('log-err',  '🚨    ' + msg); }
+function logSys(msg)  { logLine('log-sys',  '·     ' + msg); }
+function clearTerminal() { document.getElementById('terminal').innerHTML = ''; }
+
+// ── WebSocket connection ─────────────────────────────────────
+function connectWS() {
+  const url = document.getElementById('wsUrlInput').value.trim();
+  if (!url) { logWarn('Enter a WebSocket URL first.'); return; }
+
+  showConnecting(url);
+  logSys(`Connecting to ${url}…`);
+
+  try {
+    ws = new WebSocket(url);
+  } catch(e) {
+    showConnectCard();
+    logErr(`Connection failed: ${e.message}`);
+    return;
+  }
+
+  ws.onopen = () => {
+    setWsStatus(true);
+    hideOverlay();
+    startSession();
+    logSys('WebSocket connection established.');
+    logSys('EVO Safety Daemon handshake complete.');
+  };
+  ws.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      updateTelemetry(d);
+    } catch(err) {
+      logWarn(`Malformed frame: ${e.data.substring(0,60)}`);
+    }
+  };
+  ws.onerror = () => {
+    logErr('WebSocket error. Check server and CORS policy.');
+    showConnectCard();
+    setWsStatus(false);
+  };
+  ws.onclose = () => {
+    logWarn('WebSocket connection closed.');
+    setWsStatus(false);
+    if(sessionActive) showConnectCard();
+  };
+}
+
+function sendCommand(cmd) {
+  logTx(cmd);
+  if(ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(cmd);
+  } else {
+    logWarn('Not connected — command dropped.');
+  }
+}
+
+// ── Telemetry update ─────────────────────────────────────────
+function updateTelemetry(d) {
+  lastData = d;
+
+  // Metrics
+  setMetric('volts', d.volts?.toFixed(1), d.volts < 240 ? 'crit' : d.volts < 260 ? 'warn' : '');
+  setMetric('amps',  d.amps?.toFixed(1),  d.amps > 100 ? 'warn' : '');
+  setMetric('soc',   d.soc?.toFixed(1),   d.soc < 10 ? 'crit' : d.soc < 20 ? 'warn' : '');
+  setMetric('temp',  d.temp?.toFixed(1),  d.temp > 70 ? 'crit' : d.temp > 55 ? 'warn' : '');
+  setMetric('rpm',   d.rpm != null ? Math.round(d.rpm).toLocaleString() : '—', '');
+
+  // Fault
+  const faultName = FAULT_CODES[d.fault] || `CODE:${d.fault}`;
+  const faultEl = document.getElementById('v-fault');
+  if(d.fault === 0) {
+    faultEl.textContent = 'NONE';
+    faultEl.style.color = '';
+    faultEl.style.fontSize = '1.65rem';
+  } else {
+    faultEl.textContent = faultName;
+    faultEl.style.color = 'var(--red)';
+    faultEl.style.fontSize = '0.78rem';
+    if(faultName !== (faultEl.dataset.last||'')) logErr(`FAULT ACTIVE: ${faultName}`);
+  }
+  faultEl.dataset.last = faultName;
+
+  // BMS State badge
+  const stName = BMS_STATES[d.bms_state] || `ST:${d.bms_state}`;
+  const badge = document.getElementById('bmsStateBadge');
+  const bdot  = document.getElementById('bmsStateDot');
+  const btxt  = document.getElementById('bmsStateText');
+  btxt.textContent = `BMS: ${stName} · STATE ${d.bms_state}`;
+
+  badge.style.borderColor = '';
+  badge.style.background = '';
+  bdot.className = 'status-dot';
+  if(d.bms_state === 3 || d.bms_state === 4) {
+    badge.style.borderColor='var(--green)'; badge.style.background='var(--green-dim)';
+    bdot.classList.add('dot-green');
+    document.getElementById('statusBanner').className='driving';
+    document.getElementById('statusDot').className='status-dot dot-green';
+    document.getElementById('statusText').textContent='DRIVING';
+  } else if(d.bms_state === 5) {
+    badge.style.borderColor='var(--red)'; badge.style.background='var(--red-dim)';
+    bdot.classList.add('dot-red');
+    document.getElementById('statusBanner').className='inhibit';
+    document.getElementById('statusDot').className='status-dot dot-red';
+    document.getElementById('statusText').textContent='SYSTEM INHIBIT · FAULT ACTIVE';
+  } else if(d.bms_state === 2) {
+    badge.style.borderColor='var(--amber)'; badge.style.background='var(--amber-dim)';
+    bdot.classList.add('dot-amber');
+    document.getElementById('statusBanner').className='spectate';
+    document.getElementById('statusDot').className='status-dot dot-amber';
+    document.getElementById('statusText').textContent='PRECHARGING…';
+  } else {
+    bdot.classList.add('dot-dim');
+    document.getElementById('statusBanner').className='waiting';
+    document.getElementById('statusDot').className='status-dot dot-dim';
+    document.getElementById('statusText').textContent=
+      d.queue_pos > 0 ? `SPECTATING` : (ignitionOn ? 'STANDBY' : 'OFFLINE');
+  }
+
+  if(d.queue_pos > 0) {
+    document.getElementById('queuePos').textContent = `· Queue pos: ${d.queue_pos}`;
+    document.body.classList.add('spectate-mode');
+  } else {
+    document.getElementById('queuePos').textContent = '';
+    document.body.classList.remove('spectate-mode');
+  }
+
+  // Charts — push data
+  pushChart(d.volts, d.amps);
+
+  // Occasional RX log (every 50 frames)
+  if(Math.random() < 0.02) {
+    logRx(`V:${d.volts?.toFixed(1)} A:${d.amps?.toFixed(1)} SOC:${d.soc?.toFixed(1)}% T:${d.temp?.toFixed(1)}°C RPM:${Math.round(d.rpm||0)} BMS:${d.bms_state} FLT:${d.fault}`);
+  }
+}
+
+function setMetric(key, val, cls) {
+  const el = document.getElementById('v-'+key);
+  const wrap = document.getElementById('m-'+key);
+  if(!el || !wrap) return;
+  if(el.textContent !== String(val)) {
+    el.textContent = val ?? '—';
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+  wrap.className = 'metric updated ' + (cls||'');
+  setTimeout(()=>{ if(wrap) wrap.classList.remove('updated'); }, 400);
+  el.className = 'metric-val';
+  if(cls) el.parentElement.classList.add(cls);
+}
+
+function pushChart(v, a) {
+  // Main chart
+  mainChart.data.datasets[0].data.push(v);
+  mainChart.data.datasets[1].data.push(a);
+  if(mainChart.data.datasets[0].data.length > CHART_FULL_POINTS) {
+    mainChart.data.datasets[0].data.shift();
+    mainChart.data.datasets[1].data.shift();
+  }
+  mainChart.update('none');
+
+  // Mini chart
+  miniChart.data.datasets[0].data.push(v);
+  miniChart.data.datasets[1].data.push(a);
+  if(miniChart.data.datasets[0].data.length > MAX_CHART_POINTS) {
+    miniChart.data.datasets[0].data.shift();
+    miniChart.data.datasets[1].data.shift();
+  }
+  miniChart.update('none');
+}
+
+// ── Control handlers ──────────────────────────────────────────
+function onThrottle(val) {
+  throttleVal = parseInt(val);
+  document.getElementById('throttleDisplay').textContent = val;
+  updateSliderTrack(val);
+  sendCommand(`THROTTLE:${val}`);
+}
+function updateSliderTrack(val) {
+  document.getElementById('throttleSlider').style.setProperty('--pct', val+'%');
+}
+
+const toggleStates = {ignition:false, kickstand:false};
+function onToggle(key) {
+  toggleStates[key] = !toggleStates[key];
+  const on = toggleStates[key];
+  const btn = document.getElementById('tog'+key.charAt(0).toUpperCase()+key.slice(1));
+  const st  = document.getElementById('st'+key.charAt(0).toUpperCase()+key.slice(1));
+  btn.classList.toggle('on', on);
+
+  if(key==='ignition') {
+    ignitionOn = on;
+    st.textContent = on ? 'ON' : 'OFF';
+    sendCommand(`SET_IGNITION:${on ? 'ON' : 'OFF'}`);
+    logSys(`Ignition → ${on?'ON':'OFF'}`);
+  } else {
+    kickstandUp = on;
+    st.textContent = on ? 'UP' : 'DOWN';
+    sendCommand(`SET_KICKSTAND:${on ? 'UP' : 'DOWN'}`);
+    logSys(`Kickstand → ${on?'UP':'DOWN'}`);
+  }
+}
+
+function onDriveMode(mode, btn) {
+  document.querySelectorAll('.drive-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMode = mode;
+  const names=['ECO','CITY','HI-WAY','TURBOJET'];
+  sendCommand(`SET_DRIVE_MODE:${mode}`);
+  logSys(`Drive mode → ${names[mode]}`);
+}
+
+function onEstop() {
+  // Flash the button red
+  const btn = document.getElementById('estopBtn');
+  btn.style.background='rgba(239,68,68,0.4)';
+  setTimeout(()=>{btn.style.background='';},500);
+  // Zero throttle
+  document.getElementById('throttleSlider').value=0;
+  onThrottle(0);
+  sendCommand('CMD_ESTOP');
+  logErr('E-STOP COMMAND ISSUED · All drive demand zeroed.');
+}
+
+function onFault(code, name) {
+  if(!confirm(`Inject fault: ${name}?\n\nThis will trigger a SYS_KILL in the daemon.`)) return;
+  sendCommand(`INJECT_FAULT:${code}`);
+  logWarn(`Fault injection initiated · Code ${code}: ${name}`);
+}
+
+// ── Session timer ─────────────────────────────────────────────
+function startSession() {
+  sessionActive = true;
+  sessionTimer = SESSION_DURATION;
+  timerInterval = setInterval(tickTimer, 1000);
+  logSys('Session started · 15:00 remaining.');
+}
+
+function tickTimer() {
+  sessionTimer--;
+  const m = Math.floor(sessionTimer/60).toString().padStart(2,'0');
+  const s = (sessionTimer%60).toString().padStart(2,'0');
+  const el = document.getElementById('timerDisplay');
+  const wrap = document.getElementById('sessionTimer');
+  el.textContent = `${m}:${s}`;
+
+  if(sessionTimer <= 60)  wrap.className = 'crit';
+  else if(sessionTimer <= 180) wrap.className = 'warn';
+
+  if(sessionTimer <= 0) endSession();
+}
+
+function endSession() {
+  sessionActive = false;
+  clearInterval(timerInterval);
+  if(ws) { ws.close(); ws=null; }
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('connectCard').style.display='none';
+  document.getElementById('connectingCard').style.display='none';
+  document.getElementById('expiredCard').style.display='block';
+  logSys('Session expired · Daemon disconnected · HV bus safely isolated.');
+}
+
+// ── Overlay helpers ──────────────────────────────────────────
+function hideOverlay() {
+  document.getElementById('overlay').style.display='none';
+}
+function showConnectCard() {
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('connectCard').style.display='block';
+  document.getElementById('connectingCard').style.display='none';
+  document.getElementById('expiredCard').style.display='none';
+}
+function showConnecting(url) {
+  document.getElementById('connectCard').style.display='none';
+  document.getElementById('connectingCard').style.display='block';
+  document.getElementById('expiredCard').style.display='none';
+  document.getElementById('connTarget').textContent = url;
+}
+
+function setWsStatus(online, label) {
+  const el = document.getElementById('wsStatus');
+  if(online) {
+    el.style.color = 'var(--green)';
+    el.textContent = `● ${label||'LIVE'}`;
+  } else {
+    el.style.color = 'var(--text-dim)';
+    el.textContent = '○ OFFLINE';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+initCharts();
+logSys('EVO vHIL Dashboard initialised · Rev 1.4');
+logSys('Awaiting connection…');
+</script>
+</body>
+</html>

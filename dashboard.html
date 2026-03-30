@@ -1049,7 +1049,7 @@ function pushChart(v, a) {
   mainChart.data.datasets[0].data.push(v);
   mainChart.data.datasets[1].data.shift();
   mainChart.data.datasets[1].data.push(a);
-  mainChart.update('none'); // Update without expensive animations
+  mainChart.update(); // Update without expensive animations
 
   // 🟢 Do the exact same for the Mini Chart
   miniChart.data.labels.shift();
@@ -1059,7 +1059,7 @@ function pushChart(v, a) {
   miniChart.data.datasets[0].data.push(v);
   miniChart.data.datasets[1].data.shift();
   miniChart.data.datasets[1].data.push(a);
-  miniChart.update('none');
+  miniChart.update();
 }
 
 // ── Control handlers ──────────────────────────────────────────

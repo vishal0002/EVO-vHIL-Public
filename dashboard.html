@@ -725,7 +725,7 @@ body.inhibit-mode body::before { background-image: linear-gradient(rgba(239,68,6
     </div>
 
     <div class="ctrl-section lockable">
-      <button id="estopBtn" onclick="onEstop()">⬛ EMERGENCY STOP</button>
+      <button id="estopBtn" onclick="onReset()" style="border-color: var(--cyan); color: var(--cyan); box-shadow: var(--glow-c); background: rgba(0,212,255,0.1);">🔄 SYSTEM RESET</button>
     </div>
 
     <div class="ctrl-section">
@@ -1038,29 +1038,31 @@ function setMetric(key, val, cls) {
 }
 
 function pushChart(v, a) {
-  chartTick++;
-  if (chartTick % 5 !== 0) return; // 20Hz rendering limit
+  // 🟢 1. Clamp values so they NEVER fall off the screen
+  const safeV = Math.max(250, Math.min(310, v || 0)); 
+  const safeA = Math.max(-10, Math.min(120, a || 0));
 
-  // 🟢 THE CLAMP FIX: Never let the lines fall off the screen!
-  // If the VCU sends 0V during a timeout, it rests on the 250V floor.
-  const safeV = Math.max(250, Math.min(310, v)); 
-  const safeA = Math.max(-10, Math.min(120, a));
-
-  mainChart.data.labels.shift();
+  // 🟢 2. Push data to the array EVERY frame so lines don't break
   mainChart.data.labels.push('');
+  mainChart.data.labels.shift();
+  mainChart.data.datasets[0].data.push(safeV);
   mainChart.data.datasets[0].data.shift();
-  mainChart.data.datasets[0].data.push(safeV); // Push safeV instead of raw v
+  mainChart.data.datasets[1].data.push(safeA);
   mainChart.data.datasets[1].data.shift();
-  mainChart.data.datasets[1].data.push(safeA); // Push safeA instead of raw a
-  mainChart.update(); 
 
-  miniChart.data.labels.shift();
   miniChart.data.labels.push('');
-  miniChart.data.datasets[0].data.shift();
+  miniChart.data.labels.shift();
   miniChart.data.datasets[0].data.push(safeV);
-  miniChart.data.datasets[1].data.shift();
+  miniChart.data.datasets[0].data.shift();
   miniChart.data.datasets[1].data.push(safeA);
-  miniChart.update(); 
+  miniChart.data.datasets[1].data.shift();
+
+  // 🟢 3. Only ask the GPU to redraw every 5th frame (20Hz limit)
+  chartTick++;
+  if (chartTick % 5 === 0) {
+    mainChart.update('none'); 
+    miniChart.update('none');
+  }
 }
 
 // ── Control handlers ──────────────────────────────────────────
@@ -1104,16 +1106,16 @@ function onDriveMode(mode, btn) {
   logSys(`Drive mode → ${names[mode]}`);
 }
 
-function onEstop() {
-  // Flash the button red
+function onReset() {
   const btn = document.getElementById('estopBtn');
-  btn.style.background='rgba(239,68,68,0.4)';
+  btn.style.background='rgba(0,212,255,0.4)';
   setTimeout(()=>{btn.style.background='';},500);
-  // Zero throttle
-  document.getElementById('throttleSlider').value=0;
+  
+  document.getElementById('throttleSlider').value = 0;
   onThrottle(0);
-  sendCommand('CMD_ESTOP');
-  logErr('E-STOP COMMAND ISSUED · All drive demand zeroed.');
+  
+  sendCommand('CMD_RESET');
+  logSys('🔄 MASTER SYSTEM RESET ISSUED. CLEARING ALL FAULTS.');
 }
 
 function onFault(code, name) {

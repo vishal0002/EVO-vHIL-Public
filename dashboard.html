@@ -1041,25 +1041,26 @@ function pushChart(v, a) {
   chartTick++;
   if (chartTick % 5 !== 0) return; // 20Hz rendering limit
 
-  // 🟢 THE MISSING LINK: We MUST shift the empty labels so the X-Axis clock stays synced!
+  // 🟢 THE CLAMP FIX: Never let the lines fall off the screen!
+  // If the VCU sends 0V during a timeout, it rests on the 250V floor.
+  const safeV = Math.max(250, Math.min(310, v)); 
+  const safeA = Math.max(-10, Math.min(120, a));
+
   mainChart.data.labels.shift();
   mainChart.data.labels.push('');
-  
   mainChart.data.datasets[0].data.shift();
-  mainChart.data.datasets[0].data.push(v);
+  mainChart.data.datasets[0].data.push(safeV); // Push safeV instead of raw v
   mainChart.data.datasets[1].data.shift();
-  mainChart.data.datasets[1].data.push(a);
-  mainChart.update(); // Update without expensive animations
+  mainChart.data.datasets[1].data.push(safeA); // Push safeA instead of raw a
+  mainChart.update(); 
 
-  // 🟢 Do the exact same for the Mini Chart
   miniChart.data.labels.shift();
   miniChart.data.labels.push('');
-  
   miniChart.data.datasets[0].data.shift();
-  miniChart.data.datasets[0].data.push(v);
+  miniChart.data.datasets[0].data.push(safeV);
   miniChart.data.datasets[1].data.shift();
-  miniChart.data.datasets[1].data.push(a);
-  miniChart.update();
+  miniChart.data.datasets[1].data.push(safeA);
+  miniChart.update(); 
 }
 
 // ── Control handlers ──────────────────────────────────────────

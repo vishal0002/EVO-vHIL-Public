@@ -92,8 +92,8 @@ body::before {
 /* ═══ MAIN GRID (NEW LAYOUT) ═══ */
 #mainGrid {
   flex:1; display:grid;
-  grid-template-columns: 1fr 340px; /* Telemetry Left, Controls Right */
-  grid-template-rows: 1fr 280px;    /* Terminal at bottom */
+  grid-template-columns: 1fr 340px; 
+  grid-template-rows: 1fr 200px 180px; /* 🟢 Added row for Blackbox */
   gap:1px; background:var(--border); overflow:hidden; position:relative; z-index:2;
 }
 .panel { background:var(--bg); display:flex;flex-direction:column; overflow:hidden; }
@@ -107,7 +107,16 @@ body::before {
 
 #panelTelemetry { grid-column:1; grid-row:1; }
 #panelTerminal { grid-column:1; grid-row:2; }
-#panelControls { grid-column:2; grid-row:1/3; overflow-y:auto; border-left: 1px solid var(--border); }
+#panelBlackbox { grid-column:1; grid-row:3; } /* 🟢 NEW PANEL */
+#panelControls { grid-column:2; grid-row:1/4; overflow-y:auto; border-left: 1px solid var(--border); }
+
+/* 🟢 BLACKBOX STYLING */
+#blackbox-log {
+  flex:1; background:#0a0500; font-size:0.75rem; padding:12px 16px;
+  overflow-y:auto; line-height:1.8; color:var(--amber); font-family:var(--mono);
+}
+#blackbox-log::-webkit-scrollbar{width:4px;}
+#blackbox-log::-webkit-scrollbar-thumb{background:rgba(245,158,11,0.25);border-radius:2px;}
 
 /* ═══ METRICS ═══ */
 .metrics-grid {
@@ -246,6 +255,12 @@ body::before {
     </div>
     <div id="terminal"></div>
   </div>
+  <div class="panel" id="panelBlackbox">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--amber);"><span style="color:var(--amber);">//</span> LIVE BLACKBOX STREAM</div>
+    </div>
+    <div id="blackbox-log"></div>
+  </div>
 
   <div class="panel" id="panelControls">
     <div class="panel-header"><div class="panel-title"><span class="panel-title-accent">//</span> COMMAND UPLINK</div></div>
@@ -311,27 +326,43 @@ function logSys(msg){ logLine('log-sys','·     ' + msg); }
 function logErr(msg){ logLine('log-err','🚨    ' + msg); }
 function clearTerminal() { document.getElementById('terminal').innerHTML = ''; }
 
+  function logBlackbox(msg) {
+  const el = document.getElementById('blackbox-log');
+  const div = document.createElement('div');
+  div.textContent = msg;
+  el.appendChild(div);
+  while(el.children.length > 50) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+}
+  
 function connectWS() {
   const url = document.getElementById('wsUrlInput').value.trim();
   if (!url) return;
   document.getElementById('overlay').style.display = 'none';
   ws = new WebSocket(url);
-  ws.onopen = () => { document.getElementById('wsStatus').textContent = '● LIVE'; document.getElementById('wsStatus').style.color = 'var(--green)'; logSys('Connection established.'); };
-  ws.onmessage = (e) => updateTelemetry(JSON.parse(e.data));
+  ws.onopen = () => { 
+      document.getElementById('wsStatus').textContent = '● LIVE'; 
+      document.getElementById('wsStatus').style.color = 'var(--green)'; 
+      logSys('Connection established.'); 
+  };
+  
+  // 🟢 FIX: Single, clean message router!
   ws.onmessage = (e) => {
     try {
       const d = JSON.parse(e.data);
-      // 🟢 THE BLACKBOX RENDERER:
       if (d.type === 'BLACKBOX') {
-          logLine('log-warn', `[BLACKBOX] ${d.payload}`);
+          logBlackbox(d.payload); // 🟢 Route to amber panel
           return;
       }
       updateTelemetry(d);
     } catch(err) { }
   };
-  ws.onclose = () => { document.getElementById('overlay').style.display = 'flex'; logErr('Connection lost.'); };
+  
+  ws.onclose = () => { 
+      document.getElementById('overlay').style.display = 'flex'; 
+      logErr('Connection lost.'); 
+  };
 }
-
 function sendCommand(cmd) { logTx(cmd); if(ws && ws.readyState === 1) ws.send(cmd); }
 
 function updateTelemetry(d) {
@@ -340,7 +371,9 @@ function updateTelemetry(d) {
   document.getElementById('v-soc').textContent = d.soc?.toFixed(1) || '—';
   document.getElementById('v-temp').textContent = d.temp?.toFixed(1) || '—';
   document.getElementById('v-rpm').textContent = d.rpm != null ? Math.round(d.rpm) : '—';
-  
+
+  document.getElementById('statusText').textContent = (d.bms_state === 4) ? 'DRIVING' : (d.bms_state === 5) ? 'SYS FAULT' : 'ONLINE';
+  document.getElementById('statusDot').className = (d.bms_state === 4) ? 'status-dot dot-green' : (d.bms_state === 5) ? 'status-dot dot-red' : 'status-dot dot-amber';
   const fName = FAULT_CODES[d.fault] || `CODE:${d.fault}`;
   document.getElementById('v-fault').textContent = d.fault === 0 ? 'NONE' : fName;
   document.getElementById('v-fault').style.color = d.fault === 0 ? 'var(--text-hi)' : 'var(--red)';

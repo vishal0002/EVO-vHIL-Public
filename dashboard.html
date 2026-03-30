@@ -832,16 +832,16 @@ function initCharts() {
         x:{display:false,grid:{display:false}},
         yV:{
           position:'left',
-          suggestedMin: 250, // 🟢 FIXED: Locks the voltage floor so line doesn't hide
-          suggestedMax: 310, // 🟢 FIXED: Locks the voltage ceiling
+          min: 250, // 🟢 FIXED: Locks the voltage floor so line doesn't hide
+          max: 310, // 🟢 FIXED: Locks the voltage ceiling
           grid:{color:'rgba(0,212,255,0.05)',lineWidth:1},
           ticks:{color:'rgba(0,212,255,0.6)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
           border:{color:'rgba(0,212,255,0.15)'}
         },
         yA:{
           position:'right',
-          suggestedMin: -10, // 🟢 FIXED: Locks the current floor
-          suggestedMax: 110, // 🟢 FIXED: Locks the current ceiling
+          min: -10, // 🟢 FIXED: Locks the current floor
+          max: 110, // 🟢 FIXED: Locks the current ceiling
           grid:{drawOnChartArea:false},
           ticks:{color:'rgba(245,158,11,0.6)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
           border:{color:'rgba(245,158,11,0.15)'}
@@ -1039,30 +1039,29 @@ function setMetric(key, val, cls) {
 }
 
 function pushChart(v, a) {
-  chartTick++;
-  // 🟢 FIXED: The Canvas Blast. Only redraw the chart every 5th frame (20Hz limit)
-  if (chartTick % 5 !== 0) return;
-
-  // Main chart - Shift labels too so Chart.js stays perfectly synced
-  mainChart.data.labels.push('');
-  mainChart.data.labels.shift();
-  mainChart.data.datasets[0].data.push(v);
-  mainChart.data.datasets[1].data.push(a);
-  if(mainChart.data.datasets[0].data.length > CHART_FULL_POINTS) {
-    mainChart.data.datasets[0].data.shift();
-    mainChart.data.datasets[1].data.shift();
+  // 🟢 INITIALIZATION FIX: Pre-fill the entire chart history instantly with the first data packet
+  if (!chartInitialized && v !== null && a !== null) {
+      mainChart.data.datasets[0].data = Array(CHART_FULL_POINTS).fill(v);
+      mainChart.data.datasets[1].data = Array(CHART_FULL_POINTS).fill(a);
+      miniChart.data.datasets[0].data = Array(MAX_CHART_POINTS).fill(v);
+      miniChart.data.datasets[1].data = Array(MAX_CHART_POINTS).fill(a);
+      chartInitialized = true;
   }
+
+  chartTick++;
+  if (chartTick % 5 !== 0) return; // 20Hz rendering
+
+  // Shift and push real data
+  mainChart.data.datasets[0].data.shift();
+  mainChart.data.datasets[0].data.push(v);
+  mainChart.data.datasets[1].data.shift();
+  mainChart.data.datasets[1].data.push(a);
   mainChart.update('none');
 
-  // Mini chart
-  miniChart.data.labels.push('');
-  miniChart.data.labels.shift();
+  miniChart.data.datasets[0].data.shift();
   miniChart.data.datasets[0].data.push(v);
+  miniChart.data.datasets[1].data.shift();
   miniChart.data.datasets[1].data.push(a);
-  if(miniChart.data.datasets[0].data.length > MAX_CHART_POINTS) {
-    miniChart.data.datasets[0].data.shift();
-    miniChart.data.datasets[1].data.shift();
-  }
   miniChart.update('none');
 }
 

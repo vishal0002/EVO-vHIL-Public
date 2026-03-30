@@ -799,6 +799,8 @@ const CHART_OPTS_BASE = {
 
 let mainChart, miniChart;
 
+let chartTick = 0; // 🟢 NEW: Frame counter for rendering
+
 function initCharts() {
   // Main scrolling chart
   const mctx = document.getElementById('mainChart').getContext('2d');
@@ -812,49 +814,34 @@ function initCharts() {
           data: Array(CHART_FULL_POINTS).fill(null),
           borderColor:'rgba(0,212,255,0.85)',
           backgroundColor:'rgba(0,212,255,0.04)',
-          borderWidth:1.5,
-          fill:true,
-          tension:0.35,
-          pointRadius:0,
-          yAxisID:'yV'
+          borderWidth:1.5, fill:true, tension:0.35, pointRadius:0, yAxisID:'yV'
         },
         {
           label:'Current',
           data: Array(CHART_FULL_POINTS).fill(null),
           borderColor:'rgba(245,158,11,0.85)',
           backgroundColor:'rgba(245,158,11,0.03)',
-          borderWidth:1.5,
-          fill:false,
-          tension:0.35,
-          pointRadius:0,
-          yAxisID:'yA'
+          borderWidth:1.5, fill:false, tension:0.35, pointRadius:0, yAxisID:'yA'
         }
       ]
     },
     options:{
       ...CHART_OPTS_BASE,
-      plugins:{
-        legend:{
-          display:true,
-          labels:{
-            color:'#607080',
-            font:{family:"'IBM Plex Mono'",size:10},
-            boxWidth:20,padding:20,
-            usePointStyle:true,pointStyle:'line'
-          }
-        },
-        tooltip:{enabled:false}
-      },
+      plugins:{ legend:{ display:true, labels:{ color:'#607080', font:{family:"'IBM Plex Mono'",size:10}, boxWidth:20,padding:20, usePointStyle:true,pointStyle:'line' } }, tooltip:{enabled:false} },
       scales:{
         x:{display:false,grid:{display:false}},
         yV:{
           position:'left',
+          suggestedMin: 250, // 🟢 FIXED: Locks the voltage floor so line doesn't hide
+          suggestedMax: 310, // 🟢 FIXED: Locks the voltage ceiling
           grid:{color:'rgba(0,212,255,0.05)',lineWidth:1},
           ticks:{color:'rgba(0,212,255,0.6)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
           border:{color:'rgba(0,212,255,0.15)'}
         },
         yA:{
           position:'right',
+          suggestedMin: -10, // 🟢 FIXED: Locks the current floor
+          suggestedMax: 110, // 🟢 FIXED: Locks the current ceiling
           grid:{drawOnChartArea:false},
           ticks:{color:'rgba(245,158,11,0.6)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:5},
           border:{color:'rgba(245,158,11,0.15)'}
@@ -870,24 +857,16 @@ function initCharts() {
     data:{
       labels: Array(MAX_CHART_POINTS).fill(''),
       datasets:[
-        {
-          data: Array(MAX_CHART_POINTS).fill(null),
-          borderColor:'rgba(0,212,255,0.7)',
-          borderWidth:1.2,fill:false,tension:0.35,pointRadius:0
-        },
-        {
-          data: Array(MAX_CHART_POINTS).fill(null),
-          borderColor:'rgba(245,158,11,0.7)',
-          borderWidth:1.2,fill:false,tension:0.35,pointRadius:0,yAxisID:'ya'
-        }
+        { data: Array(MAX_CHART_POINTS).fill(null), borderColor:'rgba(0,212,255,0.7)', borderWidth:1.2,fill:false,tension:0.35,pointRadius:0, yAxisID:'yV' },
+        { data: Array(MAX_CHART_POINTS).fill(null), borderColor:'rgba(245,158,11,0.7)', borderWidth:1.2,fill:false,tension:0.35,pointRadius:0, yAxisID:'yA' }
       ]
     },
     options:{
       ...CHART_OPTS_BASE,
       scales:{
         x:{display:false},
-        y:{...CHART_OPTS_BASE.scales.y,ticks:{...CHART_OPTS_BASE.scales.y.ticks,maxTicksLimit:3}},
-        ya:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(245,158,11,0.5)',font:{family:"'IBM Plex Mono'",size:8},maxTicksLimit:3},border:{display:false}}
+        yV:{suggestedMin: 250, suggestedMax: 310, ...CHART_OPTS_BASE.scales.y,ticks:{...CHART_OPTS_BASE.scales.y.ticks,maxTicksLimit:3}},
+        yA:{suggestedMin: -10, suggestedMax: 110, position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(245,158,11,0.5)',font:{family:"'IBM Plex Mono'",size:8},maxTicksLimit:3},border:{display:false}}
       }
     }
   });
@@ -1060,7 +1039,13 @@ function setMetric(key, val, cls) {
 }
 
 function pushChart(v, a) {
-  // Main chart
+  chartTick++;
+  // 🟢 FIXED: The Canvas Blast. Only redraw the chart every 5th frame (20Hz limit)
+  if (chartTick % 5 !== 0) return;
+
+  // Main chart - Shift labels too so Chart.js stays perfectly synced
+  mainChart.data.labels.push('');
+  mainChart.data.labels.shift();
   mainChart.data.datasets[0].data.push(v);
   mainChart.data.datasets[1].data.push(a);
   if(mainChart.data.datasets[0].data.length > CHART_FULL_POINTS) {
@@ -1070,6 +1055,8 @@ function pushChart(v, a) {
   mainChart.update('none');
 
   // Mini chart
+  miniChart.data.labels.push('');
+  miniChart.data.labels.shift();
   miniChart.data.datasets[0].data.push(v);
   miniChart.data.datasets[1].data.push(a);
   if(miniChart.data.datasets[0].data.length > MAX_CHART_POINTS) {

@@ -345,7 +345,17 @@ function updateTelemetry(d) {
   if(Math.random() < 0.05) logRx(`V:${d.volts} A:${d.amps} T:${d.temp} FLT:${d.fault}`);
 }
 
-function onThrottle(val) { document.getElementById('throttleDisplay').textContent = val; sendCommand(`THROTTLE:${val}`); }
+let throttleTimer = null; // 🟢 NEW: Memory variable to stop spam
+
+function onThrottle(val) { 
+  document.getElementById('throttleDisplay').textContent = val; 
+  
+  // 🟢 DEBOUNCER: Prevent Node.js from freezing under a flood of commands!
+  if(throttleTimer) clearTimeout(throttleTimer);
+  throttleTimer = setTimeout(() => {
+      sendCommand(`THROTTLE:${val}`);
+  }, 40); // Only send if the slider rests for 40 milliseconds
+}
 function onToggle(key) {
   const isIg = key === 'ignition';
   if(isIg) ignitionOn = !ignitionOn; else kickstandUp = !kickstandUp;

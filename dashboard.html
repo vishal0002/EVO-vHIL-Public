@@ -243,7 +243,7 @@ body::before {
     <div class="overlay-title">EVO vHIL</div>
     <input type="text" id="callsignInput" placeholder="Driver Callsign / UUID (Optional)" autocomplete="off" style="width:100%; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--r); padding:12px; font-family:var(--mono); color:var(--text-hi); margin-bottom:8px; outline:none;" />
     
-    <input type="text" id="wsUrlInput" placeholder="wss://your-server:8080" autocomplete="off"/>
+    <input type="text" id="wsUrlInput" style="display:none;" value="wss://vcu.evovhil.com" />
     <button class="overlay-connect-btn" onclick="connectWS()">CONNECT TO VCU DAEMON</button>
   </div>
 </div>
@@ -395,7 +395,7 @@ function connectWS() {
   const url = "wss://vcu.evovhil.com";
   const callsign = document.getElementById('callsignInput').value.trim();
   if (!url) return;
-  //document.getElementById('overlay').style.display = 'none';
+  document.getElementById('overlay').style.display = 'none';
   ws = new WebSocket(url);
   
   ws.onopen = () => { 

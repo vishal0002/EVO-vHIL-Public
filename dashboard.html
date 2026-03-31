@@ -446,23 +446,41 @@ function connectWS() {
   ws.onmessage = (e) => {
     try {
       const d = JSON.parse(e.data);
+      
       if(d.type === 'KICK') { alert("15 Minute Session Limit Reached. Rotating Queue."); location.reload(); return; }
-      if(d.type === 'PROMOTED') { logSys("🟢 YOU ARE NOW THE DRIVER. CONTROLS UNLOCKED."); document.body.classList.remove('spectate-mode'); document.getElementById('queuePos').textContent = ''; return; }
+      
+      if(d.type === 'PROMOTED') { 
+          logSys("🟢 YOU ARE NOW THE DRIVER. CONTROLS UNLOCKED."); 
+          document.body.classList.remove('spectate-mode'); 
+          document.getElementById('queuePos').textContent = ''; 
+          return; 
+      }
+      
       if (d.type === 'BLACKBOX') { logBlackbox(d.payload); return; }
       
-      // 🟢 QUEUE STATUS UPDATE
-      if(d.queue_pos !== undefined) {
-          if(d.queue_pos > 0) {
+      // 🟢 THE FIX: CORRECTLY PARSE THE NODE.JS QUEUE MESSAGE
+      if (d.type === 'QUEUE_UPDATE') {
+          const pos = d.payload.position;
+          if (pos > 0) {
               document.body.classList.add('spectate-mode');
-              const qPos = document.getElementById('queuePos');
-              qPos.textContent = `· QUEUE POS: ${d.queue_pos}`;
-              qPos.style.color = 'var(--amber)';
+              document.getElementById('queuePos').textContent = `· QUEUE POS: ${pos}`;
+              document.getElementById('queuePos').style.color = 'var(--amber)';
+              
+              // Force the UI update instantly
+              document.getElementById('statusText').textContent = 'SPECTATING';
+              document.getElementById('statusText').style.color = 'var(--text-dim)';
+              document.getElementById('statusDot').className = 'status-dot dot-blue';
           } else {
               document.body.classList.remove('spectate-mode');
               document.getElementById('queuePos').textContent = '';
           }
+          return; // Stop here, this is just a queue update, not telemetry
       }
-      updateTelemetry(d);
+
+      // If it is standard telemetry, update the gauges
+      if (d.bms_state !== undefined) {
+          updateTelemetry(d);
+      }
     } catch(err) { }
   };
   

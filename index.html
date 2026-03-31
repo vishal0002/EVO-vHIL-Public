@@ -109,6 +109,7 @@ window.addEventListener("beforeunload", function () {
     <div class="nav-links" id="navLinks">
       <a href="/" class="active">Home</a>
       <a href="/architecture.html">Architecture</a>
+      <a href="/dashboard.html">Dashboard</a>
       <a href="/safety.html">Safety</a>
       <a href="/validation.html">Validation</a>
       <a href="/proof.html">Proof</a>
@@ -456,6 +457,7 @@ dual-pack energy coordination, and safety-critical state transitions — is now 
     </div>
     <nav class="footer-nav">
       <a href="/architecture.html">Architecture</a>
+      <a href="/dashboard.html">Dashboard</a>
       <a href="/safety.html">Safety</a>
       <a href="/validation.html">Validation</a>
       <a href="/proof.html">Proof</a>
@@ -500,6 +502,7 @@ const path = location.pathname;
 
 // Page-level intent tracking
 if (path.includes("architecture")) trackEvent("view_architecture");
+if (path.includes("dashboard")) trackEvent("dashboard_engagement");
 if (path.includes("safety")) trackEvent("view_safety");
 if (path.includes("validation")) trackEvent("view_validation");
 if (path.includes("proof")) trackEvent("view_proof");

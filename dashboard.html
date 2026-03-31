@@ -88,6 +88,7 @@ body::before {
 .dot-green {background:var(--green);box-shadow:0 0 8px var(--green);}
 .dot-amber {background:var(--amber);box-shadow:0 0 8px var(--amber);}
 .dot-red   {background:var(--red);box-shadow:0 0 8px var(--red);}
+.dot-blue  {background:var(--cyan);box-shadow:var(--glow-c);}
 .dot-dim   {background:var(--text-dim);}
 
 #sessionTimer {
@@ -99,11 +100,11 @@ body::before {
   font-size:0.7rem; color:var(--text-dim);
 }
 
-/* ═══ MAIN GRID (NEW LAYOUT) ═══ */
+/* ═══ MAIN GRID ═══ */
 #mainGrid {
   flex:1; display:grid;
   grid-template-columns: 1fr 340px; 
-  grid-template-rows: 1fr 200px 180px; /* 🟢 Added row for Blackbox */
+  grid-template-rows: 1fr 200px 180px;
   gap:1px; background:var(--border); overflow:hidden; position:relative; z-index:2;
 }
 .panel { background:var(--bg); display:flex;flex-direction:column; overflow:hidden; }
@@ -117,8 +118,33 @@ body::before {
 
 #panelTelemetry { grid-column:1; grid-row:1; }
 #panelTerminal { grid-column:1; grid-row:2; }
-#panelBlackbox { grid-column:1; grid-row:3; } /* 🟢 NEW PANEL */
-#panelControls { grid-column:2; grid-row:1/4; overflow-y:auto; border-left: 1px solid var(--border); }
+#panelBlackbox { grid-column:1; grid-row:3; }
+#panelControls { grid-column:2; grid-row:1/4; overflow-y:auto; border-left: 1px solid var(--border); position: relative; }
+
+/* 🟢 SPECTATOR MODE WATERMARK & LOCK */
+body.spectate-mode #panelControls {
+  opacity: 0.35;
+  pointer-events: none; /* Physically prevents clicking anything inside */
+  user-select: none;
+}
+body.spectate-mode #panelControls::after {
+  content: "SPECTATOR MODE";
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-10deg);
+  font-family: var(--head);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: rgba(0, 212, 255, 0.8);
+  border: 3px solid rgba(0, 212, 255, 0.8);
+  border-radius: 8px;
+  padding: 10px 20px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 0 20px rgba(0,212,255,0.2), inset 0 0 10px rgba(0,212,255,0.2);
+}
 
 /* 🟢 BLACKBOX STYLING */
 #blackbox-log {
@@ -189,7 +215,6 @@ body::before {
 }
 .drive-btn.active { background:var(--cyan-dim); border-color:var(--cyan); color:var(--cyan); }
 
-/* RESET BUTTON */
 #estopBtn {
   width:100%; padding:18px; border-radius:var(--r); cursor:pointer;
   font-family:var(--head);font-size:1.1rem;font-weight:700; letter-spacing:0.12em;
@@ -350,7 +375,7 @@ let ws = null, ignitionOn = false, kickstandUp = false;
 
 let sessionTimer = 15 * 60;
 let timerInterval = null;
-let savedBlackboxData = []; // 🟢 REWARD ARRAY
+let savedBlackboxData = []; 
   
 function logLine(cls, msg) {
   const el = document.getElementById('terminal'), now = new Date();
@@ -425,10 +450,13 @@ function connectWS() {
       if(d.type === 'PROMOTED') { logSys("🟢 YOU ARE NOW THE DRIVER. CONTROLS UNLOCKED."); document.body.classList.remove('spectate-mode'); document.getElementById('queuePos').textContent = ''; return; }
       if (d.type === 'BLACKBOX') { logBlackbox(d.payload); return; }
       
+      // 🟢 QUEUE STATUS UPDATE
       if(d.queue_pos !== undefined) {
           if(d.queue_pos > 0) {
               document.body.classList.add('spectate-mode');
-              document.getElementById('queuePos').textContent = `· QUEUE POS: ${d.queue_pos}`;
+              const qPos = document.getElementById('queuePos');
+              qPos.textContent = `· QUEUE POS: ${d.queue_pos}`;
+              qPos.style.color = 'var(--amber)';
           } else {
               document.body.classList.remove('spectate-mode');
               document.getElementById('queuePos').textContent = '';
@@ -453,8 +481,19 @@ function updateTelemetry(d) {
   document.getElementById('v-temp').textContent = d.temp?.toFixed(1) || '—';
   document.getElementById('v-rpm').textContent = d.rpm != null ? Math.round(d.rpm) : '—';
 
-  document.getElementById('statusText').textContent = (d.bms_state === 4) ? 'DRIVING' : (d.bms_state === 5) ? 'SYS FAULT' : 'ONLINE';
-  document.getElementById('statusDot').className = (d.bms_state === 4) ? 'status-dot dot-green' : (d.bms_state === 5) ? 'status-dot dot-red' : 'status-dot dot-amber';
+  // 🟢 CONTEXT-AWARE TOP BANNER UPDATE
+  const isSpectator = document.body.classList.contains('spectate-mode');
+  
+  if (isSpectator) {
+      document.getElementById('statusText').textContent = 'SPECTATING';
+      document.getElementById('statusText').style.color = 'var(--text-dim)';
+      document.getElementById('statusDot').className = 'status-dot dot-blue';
+  } else {
+      document.getElementById('statusText').style.color = ''; // Reset CSS override
+      document.getElementById('statusText').textContent = (d.bms_state === 4) ? 'DRIVING' : (d.bms_state === 5) ? 'SYS FAULT' : 'ONLINE';
+      document.getElementById('statusDot').className = (d.bms_state === 4) ? 'status-dot dot-green' : (d.bms_state === 5) ? 'status-dot dot-red' : 'status-dot dot-amber';
+  }
+
   const fName = FAULT_CODES[d.fault] || `CODE:${d.fault}`;
   document.getElementById('v-fault').textContent = d.fault === 0 ? 'NONE' : fName;
   document.getElementById('v-fault').style.color = d.fault === 0 ? 'var(--text-hi)' : 'var(--red)';

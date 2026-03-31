@@ -480,6 +480,8 @@ function connectWS() {
       document.getElementById('overlay').style.display = 'flex'; 
       logErr('Connection lost.'); 
       clearInterval(timerInterval); 
+    // Auto-reconnect silently after 3 seconds
+    setTimeout(connectWS, 3000);
   };
 }
 function sendCommand(cmd) { logTx(cmd); if(ws && ws.readyState === 1) ws.send(cmd); }

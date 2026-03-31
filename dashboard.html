@@ -540,7 +540,9 @@ function onThrottle(val) {
   document.getElementById('throttleDisplay').textContent = val;
   // This updates the slider track visually
   document.getElementById('throttleSlider').style.setProperty('--pct', val+'%');
-
+  
+  let actualCommand = (ignitionOn && kickstandUp) ? val : 0;
+  
   // 🟢 DEBOUNCER: Prevent Linux Server from freezing!
   if(throttleTimer) clearTimeout(throttleTimer);
   throttleTimer = setTimeout(() => {
@@ -555,6 +557,10 @@ function onToggle(key) {
   document.getElementById('tog'+(isIg?'Ignition':'Kickstand')).classList.toggle('on', on);
   document.getElementById('st'+(isIg?'Ignition':'Kickstand')).textContent = on ? (isIg?'ON':'UP') : (isIg?'OFF':'DOWN');
   sendCommand(`SET_${isIg?'IGNITION':'KICKSTAND'}:${on ? (isIg?'ON':'UP') : (isIg?'OFF':'DOWN')}`);
+  if (!ignitionOn || !kickstandUp) {
+      document.getElementById('throttleSlider').value = 0;
+      onThrottle(0); // Recursively forces the zero command
+  }
 }
 function onDriveMode(m, btn) { document.querySelectorAll('.drive-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); sendCommand(`SET_DRIVE_MODE:${m}`); }
 function onFault(c, n) { 

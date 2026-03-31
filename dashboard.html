@@ -392,10 +392,10 @@ function downloadBlackbox() {
 }
   
 function connectWS() {
-  const url = document.getElementById('wsUrlInput').value.trim();
+  const url = "wss://vcu.evovhil.com";
   const callsign = document.getElementById('callsignInput').value.trim();
   if (!url) return;
-  document.getElementById('overlay').style.display = 'none';
+  //document.getElementById('overlay').style.display = 'none';
   ws = new WebSocket(url);
   
   ws.onopen = () => { 

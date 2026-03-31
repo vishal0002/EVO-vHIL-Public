@@ -287,9 +287,11 @@ body::before {
     </div>
     <div id="terminal"></div>
   </div>
+  
   <div class="panel" id="panelBlackbox">
     <div class="panel-header">
       <div class="panel-title" style="color:var(--amber);"><span style="color:var(--amber);">//</span> LIVE BLACKBOX STREAM</div>
+      <button style="margin-left:auto; background:none; border:1px solid var(--amber); color:var(--amber); cursor:pointer; padding:4px 8px; border-radius:3px; font-family:var(--mono); font-size:0.65rem;" onclick="downloadBlackbox()">⬇️ EXPORT LOG</button>
     </div>
     <div id="blackbox-log"></div>
   </div>

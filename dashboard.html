@@ -335,6 +335,9 @@ body::before {
         <button class="fault-btn" onclick="onFault(20,'BMS_COMMS_LOSS')">Comms Loss</button>
         <button class="fault-btn" onclick="onFault(15,'PRECHARGE_FAIL')">Precharge Fail</button>
       </div>
+      <div style="margin-top: 15px; font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); text-align: center; line-height: 1.4; border-top: 1px dashed var(--border); padding-top: 10px;">
+        * DIRECT INJECTION OF CAN PACKETS, AND RENODE BACKEND WILL BE IMPLEMENTED IN UPCOMING RELEASES.
+      </div>
     </div>
   </div>
 </div>
@@ -365,6 +368,7 @@ function logErr(msg){ logLine('log-err','🚨    ' + msg); }
 function clearTerminal() { document.getElementById('terminal').innerHTML = ''; }
 
   function logBlackbox(msg) {
+    savedBlackboxData.push(msg);
   const el = document.getElementById('blackbox-log');
   const div = document.createElement('div');
   div.textContent = msg;

@@ -13,7 +13,7 @@
   function trackEvent(name) { gtag('event', name); }
   trackEvent("view_dashboard"); // Track on load
 </script>
-<script data-goatcounter="https://evovhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script data-goatcounter="https://evo-vhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -241,7 +241,9 @@ body::before {
 <div id="overlay">
   <div class="overlay-card" id="connectCard">
     <div class="overlay-title">EVO vHIL</div>
-    <input type="text" id="wsUrlInput" placeholder="ws://your-server:8080" autocomplete="off"/>
+    <input type="text" id="callsignInput" placeholder="Driver Callsign / UUID (Optional)" autocomplete="off" style="width:100%; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--r); padding:12px; font-family:var(--mono); color:var(--text-hi); margin-bottom:8px; outline:none;" />
+    
+    <input type="text" id="wsUrlInput" placeholder="wss://your-server:8080" autocomplete="off"/>
     <button class="overlay-connect-btn" onclick="connectWS()">CONNECT TO VCU DAEMON</button>
   </div>
 </div>

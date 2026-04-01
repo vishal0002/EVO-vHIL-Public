@@ -64,3 +64,12 @@ It does **not** include:
 ## Explore the Full Architecture
 
 👉 [View the full white paper](https://evovhil.com/)
+
+---
+
+🚀 Try the system live:
+→ Take control of the EV
+→ Inject faults
+→ Watch safety behavior
+
+👉 [Open Live Dashboard](https://evovhil.com/dashboard.html)

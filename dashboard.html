@@ -10,7 +10,12 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-EVS54RD7KM');
-  function trackEvent(name) { gtag('event', name); }
+  
+  // 🟢 UPGRADED: Now accepts custom data payloads
+  function trackEvent(name, params = {}) { 
+    gtag('event', name, params); 
+  }
+  
   trackEvent("view_dashboard"); // Track on load
 </script>
 <script data-goatcounter="https://evo-vhil.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -385,7 +390,7 @@ body.spectate-mode #panelControls::after {
           <span style="font-family:var(--mono); font-size:0.75rem; color:var(--text-dim);">TO: <span style="color:var(--text-hi);">feedback@evovhil.com</span></span>
           <button onclick="copyFeedbackEmail()" id="ffCopyBtn" style="background:none; border:none; color:var(--cyan); cursor:pointer; font-size:0.7rem; font-family:var(--mono); transition:0.2s;">[COPY ID]</button>
         </div>
-
+        <div class="ctrl-title" style="color:var(--cyan);">OR</div>
         <p style="font-family:var(--mono); font-size:0.7rem; color:var(--text-dim); margin-bottom:12px; text-align:left;">
           Launch secure terminal to transmit system feedback, bug reports, or behavior logs directly to engineering.
         </p>
@@ -479,9 +484,9 @@ function connectWS() {
       
       if(callsign) {
           sendCommand(`CALLSIGN:${callsign}`);
-          trackEvent("user_connected_callsign");
+          trackEvent("user_connected", { type: "callsign", callsign_name: callsign });
       } else {
-          trackEvent("user_connected_guest");
+          trackEvent("user_connected", { type: "guest", callsign_name: "GUEST" });
       }
       
       timerInterval = setInterval(() => {
@@ -598,11 +603,17 @@ function onToggle(key) {
       onThrottle(0); // Recursively forces the zero command
   }
 }
-function onDriveMode(m, btn) { document.querySelectorAll('.drive-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); sendCommand(`SET_DRIVE_MODE:${m}`); }
+function onDriveMode(m, btn) { 
+    document.querySelectorAll('.drive-btn').forEach(b=>b.classList.remove('active')); 
+    btn.classList.add('active'); 
+    sendCommand(`SET_DRIVE_MODE:${m}`); 
+    // 🟢 SEND THE DRIVE MODE TO GA4
+    trackEvent("changed_drive_mode", { mode_selected: btn.innerText });
+}
 function onFault(c, n) { 
     if(confirm(`Inject Fault: ${n}?`)) { 
         sendCommand(`INJECT_FAULT:${c}`); 
-        trackEvent("injected_fault"); 
+        trackEvent("injected_fault", { fault_name: n, fault_code: c }); 
     } 
 }
 

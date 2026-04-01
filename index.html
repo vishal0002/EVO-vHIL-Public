@@ -150,18 +150,39 @@ window.addEventListener("beforeunload", function () {
         <div class="stat-label">CCS Fast Charge</div>
       </div>
     </div>
-    <div class="btn-group">
-      <a href="/architecture.html" class="btn btn-primary" onclick="trackEvent('cta_architecture')">Explore Architecture →</a>
-      <a href="/fullpaper.html" class="btn btn-outline" onclick="trackEvent('cta_whitepaper_view')">Read White Paper</a>
+   <div class="btn-group">
+      <a href="/dashboard.html" class="btn btn-primary pulse" onclick="trackEvent('cta_hero_dashboard')">
+        🔴 OPEN LIVE DASHBOARD
+      </a>
+      <a href="/architecture.html" class="btn btn-outline" onclick="trackEvent('cta_architecture')">
+        Explore Architecture →
+      </a>
       <a href="https://raw.githubusercontent.com/vishal0002/EVO-vHIL-Public/main/docs/EVO_vHIL_Whitepaper_Public.pdf"
-     class="btn btn-primary pulse"
-     download 
-     onclick="trackEvent('whitepaper_download')"
-     data-goatcounter-click="whitepaper-download">
-     ⬇ Download Full Whitepaper
-  </a>
+         class="btn btn-outline"
+         download 
+         onclick="trackEvent('whitepaper_download')"
+         data-goatcounter-click="whitepaper-download">
+         ⬇ Download Whitepaper
+      </a>
     </div>
   </div>
+  <section class="section" style="padding-top: 0; padding-bottom: 2rem;">
+  <div class="container" style="max-width:760px;">
+    <div class="callout" style="border: 1px solid var(--cyan); background: rgba(0,212,255,0.05); box-shadow: 0 0 20px rgba(0,212,255,0.1);">
+      <h4 style="color: var(--cyan); margin-bottom: 1rem; font-size: 1.3rem; letter-spacing: 0.05em;">🚀 Try the system live:</h4>
+      
+      <ul style="list-style: none; padding: 0; margin-bottom: 1.5rem; font-family: var(--mono); font-size: 1rem; color: var(--text-hi); line-height: 1.8;">
+        <li><span style="color:var(--cyan); margin-right:10px; font-weight:bold;">→</span> Take control of the EV</li>
+        <li><span style="color:var(--cyan); margin-right:10px; font-weight:bold;">→</span> Inject faults (thermal runaway, contactor weld)</li>
+        <li><span style="color:var(--cyan); margin-right:10px; font-weight:bold;">→</span> Watch safety behavior & state transitions</li>
+      </ul>
+
+      <a href="/dashboard.html" class="btn btn-primary" style="display: block; text-align: center; width: 100%; box-sizing: border-box; font-size: 1.1rem;" onclick="trackEvent('cta_callout_dashboard')">
+        👉 OPEN LIVE DASHBOARD
+      </a>
+    </div>
+  </div>
+</section>
 </section>
 
 <!-- ── WHAT IS ── -->
@@ -184,6 +205,7 @@ window.addEventListener("beforeunload", function () {
           <li><span class="icon">🛡️</span><span><a href="https://en.wikipedia.org/wiki/ISO_26262" target="_blank" rel="noopener noreferrer" style="color:var(--cyan);">ISO 26262</a>-inspired fail-safe safety model with atomic faulting</span></li>
           <li><span class="icon">🔬</span><span>Deterministic fault injection pipeline for CI/CD integration</span></li>
         </ul>
+        
       </div>
       <!-- SVG Architecture Mini-Diagram -->
       <div>

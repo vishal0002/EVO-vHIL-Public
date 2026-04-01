@@ -374,10 +374,10 @@ body.spectate-mode #panelControls::after {
     <div class="ctrl-section">
       <div class="ctrl-title" style="color:var(--red);">⚠ Hardware Sabotage</div>
       <div class="fault-grid">
-        <button class="fault-btn" onclick="onFault(8,'THERMAL_RUNAWAY')">Thermal Spike</button>
-        <button class="fault-btn" onclick="onFault(5,'CONTACTOR_WELD')">Contactor Weld</button>
-        <button class="fault-btn" onclick="onFault(20,'BMS_COMMS_LOSS')">Comms Loss</button>
-        <button class="fault-btn" onclick="onFault(15,'PRECHARGE_FAIL')">Precharge Fail</button>
+        <button class="fault-btn" onclick="onFault(8,'THERMAL_SHUTDOWN')">Thermal Spike</button>
+        <button class="fault-btn" onclick="onFault(4,'CONTACTOR_WELD')">Contactor Weld</button>
+        <button class="fault-btn" onclick="onFault(16,'BMS_COMMS_LOSS')">Comms Loss</button>
+        <button class="fault-btn" onclick="onFault(12,'PRECHARGE_FAIL')">Precharge Fail</button>
       </div>
       <div style="margin-top: 15px; font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); text-align: center; line-height: 1.4; border-top: 1px dashed var(--border); padding-top: 10px;">
         * DIRECT INJECTION OF CAN PACKETS, AND RENODE BACKEND WILL BE IMPLEMENTED IN UPCOMING RELEASES.

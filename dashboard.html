@@ -377,8 +377,8 @@ body.spectate-mode #panelControls::after {
       <div style="margin-top: 15px; font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); text-align: center; line-height: 1.4; border-top: 1px dashed var(--border); padding-top: 10px;">
         * DIRECT INJECTION OF CAN PACKETS, AND RENODE BACKEND WILL BE IMPLEMENTED IN UPCOMING RELEASES.
       </div>
-      <a href="mailto:feedback@evovhil.com?subject=EVO%20vHIL%20Beta%20Feedback" style="display:block; text-align:center; padding:12px; margin-top:15px; background:rgba(0,212,255,0.05); border:1px solid var(--cyan); color:var(--cyan); text-decoration:none; border-radius:var(--r); font-family:var(--head); font-weight:700; letter-spacing:0.1em; transition: all 0.2s;">
-        ✉️ SEND SYSTEM FEEDBACK
+      <a href="https://forms.zohopublic.in/vishalbagadeevo1/form/Feedback/formperma/5rhk_HWmPPVv9kAq5KqFbuwi5pLEDF1ZvyA-MFhL2JA" target="_blank" onclick="zforms_open_window(this.href, 648, 700); return false;" style="display:block; text-align:center; padding:12px; margin-top:15px; background:rgba(0,212,255,0.05); border:1px solid var(--cyan); color:var(--cyan); text-decoration:none; border-radius:var(--r); font-family:var(--head); font-weight:700; letter-spacing:0.1em; transition: all 0.2s;">
+        🚀 LAUNCH TRANSMISSION TERMINAL
       </a>
     </div>
   </div>
@@ -584,7 +584,16 @@ function onReset() {
     logSys('🔄 MASTER RESET ISSUED.'); 
     trackEvent("system_reset"); 
 }
-
+// 🟢 ZOHO FORMS POPUP LOGIC
+function zforms_open_window(url, height, width){
+  var leftPos = 0;
+  var topPos = 0;
+  if(screen){
+    leftPos = (screen.width - width) / 2;
+    topPos = (screen.height - height) / 2;
+    window.open(url, null, 'width='+width+',height='+height+',left='+leftPos+',top='+topPos+', toolbar=0, location=0, status=1, scrollbars=1, resizable=1');
+  }
+}
 // 🟢 HAMBURGER MENU LOGIC
 const navToggle = document.getElementById('navToggle');
 const navLinks  = document.getElementById('navLinks');

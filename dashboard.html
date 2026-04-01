@@ -277,12 +277,24 @@ body.spectate-mode #panelControls::after {
 </style>
 </head>
 <body>
-
+<div id="mobileWarning" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(5,8,16,0.95); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+  <div style="background:var(--bg-card); border:1px solid var(--amber); border-radius:8px; padding:2.5rem; text-align:center; max-width:90%; width:340px; box-shadow: 0 0 20px rgba(245,158,11,0.1);">
+    <div style="color:var(--amber); font-size:3rem; margin-bottom:1rem;">📱</div>
+    <h2 style="font-family:var(--head); color:var(--amber); font-size:1.5rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.1em;">DESKTOP RECOMMENDED</h2>
+    <p style="font-family:var(--mono); color:var(--text-dim); font-size:0.8rem; margin-bottom:1.5rem; line-height:1.6;">
+      This vHIL interface features dense telemetry and multi-variable control systems. For the optimal engineering and safety UI experience, a desktop browser is highly recommended.
+    </p>
+    <button onclick="dismissMobileWarning()" style="width:100%; padding:12px; background:rgba(245,158,11,0.1); border:1px solid var(--amber); color:var(--amber); font-family:var(--head); font-weight:700; letter-spacing:0.1em; border-radius:var(--r); cursor:pointer; transition:all 0.2s;">
+      🚀 CONTINUE ANYWAY
+    </button>
+  </div>
+</div>
 <div id="overlay">
   <div class="overlay-card" id="connectCard">
     <div class="overlay-title">EVO vHIL</div>
     <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--r); padding: 14px; margin-bottom: 20px; text-align: left; font-family: var(--mono); font-size: 0.75rem; color: var(--text-hi); line-height: 1.5;">
-      <strong style="color: var(--amber); letter-spacing: 0.1em; display: block; margin-bottom: 6px; font-family: var(--head); font-size: 0.9rem;">⚠ ARCHITECTURE NOTICE</strong>
+      <strong style="color: var(--amber); letter-spacing: 0.1em; display: block; margin-bottom: 6px; font-family: var(--head); font-size: 0.9rem;">⚠️ ARCHITECTURE NOTICE</strong>
+      <strong style="color: var(--amber); letter-spacing: 0.1em; display: block; margin-bottom: 6px; font-family: var(--head); font-size: 0.9rem;">⚠️ Best experienced on desktop — mobile view is limited</strong>
       <span style="color: var(--text-dim);">This environment is currently configured for logic-level VCU validation. The physical BMS silicon simulation (via Renode) is under active integration. Battery/Motor telemetry is currently synthesized.</span>
     </div>
     <input type="text" id="callsignInput" placeholder="Driver Callsign / UUID (Optional)" autocomplete="off" style="width:100%; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--r); padding:12px; font-family:var(--mono); color:var(--text-hi); margin-bottom:8px; outline:none;" />
@@ -642,6 +654,22 @@ if (navToggle && navLinks) {
     navLinks.classList.toggle('open');
   });
 }
+
+  // 🟢 SMART MOBILE DETECTION
+function checkMobile() {
+  if (window.innerWidth < 768) {
+    document.getElementById('mobileWarning').style.display = 'flex';
+    trackEvent("mobile_warning_shown"); // Track how much mobile traffic you are getting
+  }
+}
+
+function dismissMobileWarning() {
+  document.getElementById('mobileWarning').style.display = 'none';
+  trackEvent("mobile_warning_dismissed");
+}
+
+// Run the check immediately on load
+checkMobile();
 </script>
 </body>
 </html>

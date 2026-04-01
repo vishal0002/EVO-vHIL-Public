@@ -434,7 +434,20 @@ function clearTerminal() { document.getElementById('terminal').innerHTML = ''; }
   while(el.children.length > 50) el.removeChild(el.firstChild);
   el.scrollTop = el.scrollHeight;
 }
-
+// 🟢 COPY EMAIL TO CLIPBOARD LOGIC
+function copyFeedbackEmail() {
+  navigator.clipboard.writeText("feedback@evovhil.com").then(() => {
+    const btn = document.getElementById('ffCopyBtn');
+    btn.innerText = "[✔ COPIED]";
+    btn.style.color = "var(--green)";
+    
+    setTimeout(() => {
+      btn.innerText = "[COPY ID]";
+      btn.style.color = "var(--cyan)";
+    }, 3000);
+  });
+  trackEvent("copy_feedback_email");
+}
 // 🟢 EXPORT FUNCTION (NO BACKEND REQURIED)
 function downloadBlackbox() {
   const cs = document.getElementById('callsignInput').value.trim() || "GUEST";

@@ -81,94 +81,62 @@
 </section>
 
 <section class="section">
-  <div class="container">
-    <div class="two-col" style="align-items:start; gap:4rem;">
-      <div>
-        <div class="section-header">
-          <div class="section-tag">Creator</div>
-          <h2 class="section-title">Vishal Bagade</h2>
-          <p class="section-lead">
-            Developer of EVO vHIL — a full-stack virtual hardware-in-the-loop framework for EV powertrain validation, spanning embedded firmware, Android Automotive, and deterministic fault injection systems.
-          </p>
-        </div>
+  <div class="container" style="max-width:800px;">
 
-        <p>
-          I built EVO vHIL to explore how much of EV powertrain validation can be shifted into software before physical hardware becomes available.
-          The project combines embedded firmware, Android Automotive integration, virtual networking, and deterministic fault injection into a single system-level workflow.
-        </p>
-
-        <p>
-          The goal is simple: make early validation faster, safer, and more repeatable while keeping the architecture close to production-intent behavior.
-        </p>
-
-        <div class="callout cyan mt-4">
-          <h4 style="margin-bottom:0.5rem;">Contact</h4>
-          <p>Email: <a id="email"></a></p>
-
-            <script>
-            const user = "vishalbagade";
-            const domain = "gmail.com";
-            const email = user + "@" + domain;
-
-            const link = document.getElementById("email");
-            link.href = "mailto:" + email;
-            link.textContent = email;
-            </script>
-          LinkedIn: <a href="https://www.linkedin.com/in/vishal-bagade/" target="_blank">linkedin.com/in/vishal-bagade/</a><br>
-          GitHub: <a href="https://github.com/vishal0002" target="_blank">github.com/vishal0002</a>
-          X: <a href="https://x.com/VishalBagade121" target="_blank">x.com/VishalBagade121</a><br>
-          
-          </p>
-        </div>
-        <a href="https://bms.evovhil.com/" onclick="trackEvent('nav_bms')">BMS Architecture Comming Soon</a>
-      </div>
-  
-      <div>
-        <div class="card-grid">
-          <div class="card">
-            <span class="card-icon">⚡</span>
-            <div class="card-title">Embedded Systems</div>
-            <div class="card-body">
-              Firmware, RTOS workflows, control logic, and system timing.
-            </div>
-          </div>
-
-          <div class="card">
-            <span class="card-icon">🔋</span>
-            <div class="card-title">EV Architecture</div>
-            <div class="card-body">
-              Dual-pack topology, safety boundaries, and powertrain validation.
-            </div>
-          </div>
-
-          <div class="card">
-            <span class="card-icon">📱</span>
-            <div class="card-title">Android Automotive</div>
-            <div class="card-body">
-              Vendor-side daemon integration and control-plane separation.
-            </div>
-          </div>
-
-          <div class="card">
-            <span class="card-icon">🧪</span>
-            <div class="card-title">Virtual HIL</div>
-            <div class="card-body">
-              Renode-based simulation, CAN bridge logic, and CI fault injection.
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="section-header">
+      <div class="section-tag">About the Framework</div>
+      <h2 class="section-title">Project Origins</h2>
+      <p class="section-lead">
+        A full-stack virtual hardware-in-the-loop framework for EV powertrain validation,
+        spanning embedded firmware, Android Automotive, and deterministic fault injection systems.
+      </p>
     </div>
+
+    <p>
+      EVO vHIL was built to explore how much of EV powertrain validation can be shifted into software
+      before physical hardware becomes available. The project combines embedded C/RTOS firmware,
+      Android Automotive OS integration, virtual CAN networking, and deterministic fault injection
+      into a single, closed-loop system-level workflow.
+    </p>
+
+    <p>
+      The goal is straightforward: make early-stage validation faster, safer, and more repeatable
+      while keeping the architecture close to production-intent behavior — including dual-pack
+      battery topology, ISO 26262-inspired safety logic, and ISO 15118 DC fast charging handshake
+      sequences.
+    </p>
+
+    <div class="callout mt-4">
+      <h4 style="margin-bottom:0.5rem;">What This Project Demonstrates</h4>
+      <ul style="margin:0; padding-left:1.2rem;">
+        <li>Full-stack EV system simulation without physical hardware</li>
+        <li>Production-style firmware interacting with Android Automotive</li>
+        <li>Deterministic fault injection across system boundaries</li>
+        <li>Safety-first architecture with ASIL-inspired behavior</li>
+      </ul>
+    </div>
+
+    <div class="callout cyan mt-4">
+      <h4 style="margin-bottom:0.75rem;">Project Maintainer</h4>
+      <p style="margin-bottom:1.25rem;">
+        EVO vHIL is developed and maintained by Vishal Bagade. For hardware build logs,
+        contact information, and other engineering projects, visit the primary portfolio.
+      </p>
+      <a href="https://vishal.evovhil.com/" target="_blank" rel="noopener noreferrer"
+         style="display:inline-flex; align-items:center; gap:0.4rem;
+                font-family:var(--head); font-size:0.9rem; font-weight:600;
+                letter-spacing:0.07em; text-transform:uppercase;
+                padding:0.7rem 1.6rem; border-radius:5px;
+                background:var(--cyan); color:#050810;
+                box-shadow:0 0 18px rgba(0,212,255,0.35);
+                text-decoration:none; transition:all 0.2s;"
+         onmouseover="this.style.background='#20e5ff';this.style.transform='translateY(-1px)'"
+         onmouseout="this.style.background='var(--cyan)';this.style.transform=''">
+        View Portfolio ↗
+      </a>
+    </div>
+
   </div>
-  <div class="callout mt-4">
-  <h4 style="margin-bottom:0.5rem;">What This Project Demonstrates</h4>
-  <ul style="margin:0; padding-left:1.2rem;">
-    <li>Full-stack EV system simulation without physical hardware</li>
-    <li>Production-style firmware interacting with Android Automotive</li>
-    <li>Deterministic fault injection across system boundaries</li>
-    <li>Safety-first architecture with ASIL-inspired behavior</li>
-  </ul>
-</div>
 </section>
 
 <section class="section">
